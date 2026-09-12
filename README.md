@@ -38,9 +38,16 @@ En producción debes cambiar la cuenta inicial, definir `SECRET_KEY` y no reutil
 4. Build command: `pip install -r requirements.txt`.
 5. Start command: `gunicorn "app:create_app()"`.
 6. Añade las variables `SECRET_KEY`, `EMBASSY_VISA_URL` y las claves VAPID si usarás notificaciones push.
-7. Despliega y prueba la URL pública.
+7. Crea una base PostgreSQL en el proveedor elegido y copia su cadena de conexión en `DATABASE_URL`.
+8. Despliega y prueba la URL pública.
 
-La configuración por defecto usa SQLite. En planes gratuitos con almacenamiento efímero, los datos locales pueden perderse al reiniciar o desplegar; para producción conviene conectar PostgreSQL y definir `DATABASE_URL`.
+La configuración local usa SQLite si no existe `DATABASE_URL`. En producción, define `DATABASE_URL` con la cadena PostgreSQL. Render puede pedirte crear la base de datos por separado según el plan disponible; copia su URL privada en la variable del Web Service. Las tablas se crean automáticamente al iniciar la aplicación.
+
+Ejemplo de formato:
+
+```text
+DATABASE_URL=postgresql://usuario:contraseña@host:5432/hola_guinea
+```
 
 ## Pruebas
 

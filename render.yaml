@@ -10,3 +10,5 @@ services:
         generateValue: true
       - key: EMBASSY_VISA_URL
         value: https://www.guineaecuatorialembassy.com/
+      - key: DATABASE_URL
+        sync: false

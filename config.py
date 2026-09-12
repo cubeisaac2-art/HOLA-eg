@@ -4,12 +4,20 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent
 
 
+def database_url():
+    configured_url = os.environ.get("DATABASE_URL")
+    if not configured_url:
+        return f"sqlite:///{BASE_DIR / 'app.db'}"
+    if configured_url.startswith("postgres://"):
+        return configured_url.replace("postgres://", "postgresql+psycopg://", 1)
+    if configured_url.startswith("postgresql://"):
+        return configured_url.replace("postgresql://", "postgresql+psycopg://", 1)
+    return configured_url
+
+
 class Config:
     SECRET_KEY = os.environ.get("SECRET_KEY", "dev-secret-key-change-me")
-    SQLALCHEMY_DATABASE_URI = os.environ.get(
-        "DATABASE_URL",
-        f"sqlite:///{BASE_DIR / 'app.db'}",
-    )
+    SQLALCHEMY_DATABASE_URI = database_url()
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
     WTF_CSRF_ENABLED = True
