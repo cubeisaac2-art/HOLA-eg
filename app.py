@@ -115,6 +115,15 @@ def create_app(config_name: str = "default"):
         ensure_schema_columns()
         seed_data()
 
+    @app.context_processor
+    def share_helpers():
+        def public_url(endpoint, **values):
+            path = url_for(endpoint, **values)
+            base_url = app.config.get("PUBLIC_BASE_URL")
+            return f"{base_url}{path}" if base_url else url_for(endpoint, _external=True, **values)
+
+        return {"public_url": public_url}
+
     @app.route("/set-language/<lang>")
     def set_language(lang):
         if lang in app.config.get("LANGUAGES", ["es", "fr"]):

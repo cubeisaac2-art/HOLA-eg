@@ -33,6 +33,7 @@ class Config:
     VAPID_PRIVATE_KEY = os.environ.get("VAPID_PRIVATE_KEY", "-----BEGIN PRIVATE KEY-----\nMIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgAIZgDqxgG7zrgY62\n9AQ79j3vAVwsr3nC+Obpo89j9U+hRANCAAQfLqr+2cUm21N2K8cdcD+1AGqWnGao\nQoHHvCTcD6MbdhLHvWZPZz/BJ5TvXSxQ9TKPNge3NDlmMweUGk9gzkPx\n-----END PRIVATE KEY-----")
     VAPID_CLAIM_EMAIL = os.environ.get("VAPID_CLAIM_EMAIL", "admin@holaguinea.com")
     EMBASSY_VISA_URL = os.environ.get("EMBASSY_VISA_URL", "https://www.guineaecuatorialembassy.com/")
+    PUBLIC_BASE_URL = os.environ.get("PUBLIC_BASE_URL", "").rstrip("/")
 
     LANGUAGES = ["es", "fr"]
     DEFAULT_LANGUAGE = "es"

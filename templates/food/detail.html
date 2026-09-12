@@ -12,8 +12,8 @@
             <p>{{ item.description }}</p>
             {% if item.recipe %}<div class="mt-4"><h2 class="h4">Receta</h2><p class="white-space-pre-line">{{ item.recipe }}</p></div>{% endif %}
             <div class="d-flex gap-2 flex-wrap">
-                <button class="btn btn-primary" type="button" data-share-title="{{ item.name|e }}" data-share-url="{{ url_for('food_detail', item_id=item.id, _external=True) }}"><i class="bi bi-share me-1"></i>Compartir</button>
-                <a class="btn btn-success" href="https://wa.me/?text={{ (item.name ~ ' ' ~ url_for('food_detail', item_id=item.id, _external=True))|urlencode }}" target="_blank" rel="noopener"><i class="bi bi-whatsapp me-1"></i>WhatsApp</a>
+                <button class="btn btn-primary" type="button" data-share-title="{{ item.name|e }}" data-share-url="{{ public_url('food_detail', item_id=item.id) }}"><i class="bi bi-share me-1"></i>Compartir</button>
+                <a class="btn btn-success" href="https://wa.me/?text={{ (item.name ~ ' ' ~ public_url('food_detail', item_id=item.id))|urlencode }}" target="_blank" rel="noopener"><i class="bi bi-whatsapp me-1"></i>WhatsApp</a>
                 {% if item.video_url %}<a class="btn btn-outline-danger" href="{{ item.video_url }}" target="_blank" rel="noopener"><i class="bi bi-play-circle me-1"></i>Ver preparación</a>{% endif %}
                 <button class="btn btn-outline-primary favorite-toggle" data-content-type="food" data-content-id="{{ item.id }}">{% if is_favorite %}Quitar favorito{% else %}Añadir favorito{% endif %}</button>
                 <a class="btn btn-primary" href="{{ url_for('food_list') }}">Volver</a>
