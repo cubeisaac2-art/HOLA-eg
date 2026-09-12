@@ -27,6 +27,8 @@
                     <li class="nav-item"><a class="nav-link" href="{{ url_for('food_list') }}">Comidas</a></li>
                     <li class="nav-item"><a class="nav-link" href="{{ url_for('restaurants') }}">Restaurantes</a></li>
                     <li class="nav-item"><a class="nav-link" href="{{ url_for('hotels') }}">Hoteles</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{{ url_for('places') }}">Lugares</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{{ url_for('news') }}">Noticias</a></li>
                     <li class="nav-item"><a class="nav-link" href="{{ url_for('map_view') }}">Mapa</a></li>
                 </ul>
                 <div class="d-flex align-items-center gap-2">
@@ -72,6 +74,7 @@
         <div class="container d-flex flex-column flex-md-row justify-content-between align-items-center gap-2 text-muted">
             <span>© 2026 HOLA GUINEA</span>
             <div class="d-flex gap-3">
+                <a href="{{ url_for('visa') }}" target="_blank" rel="noopener">Visado</a>
                 <a href="{{ url_for('about') }}">Acerca de</a>
                 <a href="{{ url_for('privacy') }}">Privacidad</a>
                 <button id="installPwaBtn" class="btn btn-link p-0">Instalar app</button>

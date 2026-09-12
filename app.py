@@ -15,10 +15,12 @@ from forms import (
     FoodForm,
     RestaurantForm,
     HotelForm,
+    PlaceRecommendationForm,
+    NewsForm,
     ReviewForm,
     NotificationForm,
 )
-from models import db, User, DictionaryEntry, FoodItem, Restaurant, Hotel, Favorite, Review, PushSubscription, NotificationLog, ActivityLog
+from models import db, User, DictionaryEntry, FoodItem, Restaurant, Hotel, PlaceRecommendation, NewsArticle, Favorite, Review, PushSubscription, NotificationLog, ActivityLog
 from utils import save_upload_image
 
 
@@ -118,6 +120,59 @@ def create_app(config_name: str = "default"):
     @app.route("/privacy")
     def privacy():
         return render_template("privacy.html")
+
+    @app.route("/places")
+    def places():
+        category = request.args.get("category", "all")
+        query = PlaceRecommendation.query.filter_by(status="approved")
+        if category != "all":
+            query = query.filter_by(category=category)
+        recommendations = query.order_by(PlaceRecommendation.created_at.desc()).all()
+        return render_template("places/list.html", recommendations=recommendations, category=category)
+
+    @app.route("/places/recommend", methods=["GET", "POST"])
+    @login_required
+    def recommend_place():
+        form = PlaceRecommendationForm()
+        if form.validate_on_submit():
+            image_path = "default-place.svg"
+            if form.image.data:
+                image_path = save_upload_image(form.image.data, folder="places")
+            recommendation = PlaceRecommendation(
+                user_id=current_user.id,
+                name=form.name.data.strip(),
+                description=form.description.data.strip(),
+                city=form.city.data.strip(),
+                category=form.category.data,
+                address=(form.address.data or "").strip(),
+                latitude=form.latitude.data,
+                longitude=form.longitude.data,
+                image=image_path,
+            )
+            db.session.add(recommendation)
+            db.session.commit()
+            log_activity(current_user.id, "place_recommended", f"Sitio recomendado: {recommendation.name}")
+            flash("Gracias. Tu recomendación será revisada antes de publicarse.", "success")
+            return redirect(url_for("places"))
+        return render_template("places/form.html", form=form)
+
+    @app.route("/news")
+    def news():
+        category = request.args.get("category", "all")
+        query = NewsArticle.query.filter_by(is_published=True)
+        if category != "all":
+            query = query.filter_by(category=category)
+        articles = query.order_by(NewsArticle.published_at.desc()).all()
+        return render_template("news/list.html", articles=articles, category=category)
+
+    @app.route("/news/<int:article_id>")
+    def news_detail(article_id):
+        article = NewsArticle.query.filter_by(id=article_id, is_published=True).first_or_404()
+        return render_template("news/detail.html", article=article)
+
+    @app.route("/visa")
+    def visa():
+        return redirect(app.config["EMBASSY_VISA_URL"])
 
     @app.route("/register", methods=["GET", "POST"])
     def register():
@@ -392,6 +447,8 @@ def create_app(config_name: str = "default"):
             "food_items": FoodItem.query.count(),
             "restaurants": Restaurant.query.count(),
             "hotels": Hotel.query.count(),
+            "recommendations": PlaceRecommendation.query.count(),
+            "news": NewsArticle.query.count(),
             "reviews": Review.query.count(),
             "favorites": Favorite.query.count(),
         }
@@ -427,7 +484,46 @@ def create_app(config_name: str = "default"):
         restaurants = Restaurant.query.order_by(Restaurant.created_at.desc()).all()
         hotels = Hotel.query.order_by(Hotel.created_at.desc()).all()
         dictionary = DictionaryEntry.query.order_by(DictionaryEntry.created_at.desc()).all()
-        return render_template("admin/content.html", foods=foods, restaurants=restaurants, hotels=hotels, dictionary=dictionary)
+        recommendations = PlaceRecommendation.query.order_by(PlaceRecommendation.created_at.desc()).all()
+        articles = NewsArticle.query.order_by(NewsArticle.published_at.desc()).all()
+        return render_template("admin/content.html", foods=foods, restaurants=restaurants, hotels=hotels, dictionary=dictionary, recommendations=recommendations, articles=articles)
+
+    @app.route("/admin/content/recommendations/<int:recommendation_id>/toggle", methods=["POST"])
+    @login_required
+    def toggle_recommendation(recommendation_id):
+        if not current_user.is_admin:
+            return jsonify({"status": "forbidden"}), 403
+        recommendation = PlaceRecommendation.query.get_or_404(recommendation_id)
+        recommendation.status = "approved" if recommendation.status != "approved" else "hidden"
+        db.session.commit()
+        flash("Estado de la recomendación actualizado.", "success")
+        return redirect(url_for("admin_content"))
+
+    @app.route("/admin/content/news/new", methods=["GET", "POST"])
+    @login_required
+    def admin_new_news():
+        if not current_user.is_admin:
+            flash("No tienes permisos de administrador.", "danger")
+            return redirect(url_for("index"))
+        form = NewsForm()
+        if form.validate_on_submit():
+            image_path = "default-news.svg"
+            if form.image.data:
+                image_path = save_upload_image(form.image.data, folder="news")
+            article = NewsArticle(
+                title=form.title.data.strip(),
+                summary=form.summary.data.strip(),
+                body=form.body.data.strip(),
+                category=form.category.data,
+                source_url=(form.source_url.data or "").strip(),
+                image=image_path,
+            )
+            db.session.add(article)
+            db.session.commit()
+            log_activity(current_user.id, "news_created", f"Noticia publicada: {article.title}")
+            flash("Noticia publicada correctamente.", "success")
+            return redirect(url_for("admin_content"))
+        return render_template("admin/news_form.html", form=form)
 
     @app.route("/admin/content/food/new", methods=["GET", "POST"])
     @login_required
@@ -652,6 +748,15 @@ def seed_data():
             [
                 Hotel(name="Hotel Moka", description="Alojamiento moderno con excelente servicio.", city="Malabo", address="Malabo centro", phone="+240222222", website="https://example.com", price_level="alto", stars=4, latitude=3.752, longitude=8.781, image="default-hotel.svg"),
                 Hotel(name="Hotel del Golfo", description="Hotel de paso con atención cercana.", city="Bata", address="Bata centro", phone="+240333333", website="https://example.com", price_level="medio", stars=3, latitude=1.864, longitude=9.767, image="default-hotel.svg"),
+            ]
+        )
+
+    if NewsArticle.query.count() == 0:
+        db.session.add_all(
+            [
+                NewsArticle(title="Memoria viva de Malabo", summary="Un recorrido por lugares y relatos que ayudan a entender la historia de la capital.", body="La historia de Guinea Ecuatorial también se conserva en sus calles, edificios, paisajes y relatos familiares. Esta sección reunirá contenidos para conocer ese patrimonio con respeto y contexto.", category="historia", image="default-news.svg"),
+                NewsArticle(title="Agenda deportiva local", summary="Sigue la actualidad del deporte y las historias de quienes mueven el fútbol y otras disciplinas.", body="El deporte conecta barrios, ciudades y generaciones. Aquí compartiremos noticias, perfiles y eventos deportivos de Guinea Ecuatorial.", category="deporte", image="default-news.svg"),
+                NewsArticle(title="Cultura y vida cotidiana", summary="Noticias sobre cultura, gastronomía, música y actividades de interés para la comunidad.", body="HOLA GUINEA reúne información práctica y contenidos de interés para residentes, visitantes y personas que quieren conocer mejor el país.", category="cultura", image="default-news.svg"),
             ]
         )
 

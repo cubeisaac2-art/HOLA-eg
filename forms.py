@@ -75,6 +75,28 @@ class HotelForm(FlaskForm):
     submit = SubmitField("Guardar")
 
 
+class PlaceRecommendationForm(FlaskForm):
+    name = StringField("Nombre del sitio", validators=[DataRequired(), Length(min=2, max=150)])
+    description = TextAreaField("¿Por qué lo recomiendas?", validators=[DataRequired(), Length(min=10, max=1000)])
+    city = StringField("Ciudad o zona", validators=[DataRequired(), Length(min=2, max=80)])
+    category = SelectField("Categoría", choices=[("naturaleza", "Naturaleza"), ("cultura", "Cultura"), ("historia", "Historia"), ("deporte", "Deporte"), ("ocio", "Ocio")], default="cultura")
+    address = StringField("Dirección o referencia", validators=[Optional(), Length(max=200)])
+    latitude = FloatField("Latitud", validators=[Optional()])
+    longitude = FloatField("Longitud", validators=[Optional()])
+    image = FileField("Imagen", validators=[FileAllowed(["jpg", "jpeg", "png", "webp"], "Solo imágenes JPG, PNG o WEBP.")])
+    submit = SubmitField("Enviar recomendación")
+
+
+class NewsForm(FlaskForm):
+    title = StringField("Título", validators=[DataRequired(), Length(min=5, max=180)])
+    summary = StringField("Resumen", validators=[DataRequired(), Length(min=10, max=300)])
+    body = TextAreaField("Contenido", validators=[DataRequired(), Length(min=20, max=5000)])
+    category = SelectField("Categoría", choices=[("actualidad", "Actualidad"), ("historia", "Historia"), ("deporte", "Deporte"), ("cultura", "Cultura")], default="actualidad")
+    source_url = StringField("Enlace de fuente", validators=[Optional(), Length(max=500)])
+    image = FileField("Imagen", validators=[FileAllowed(["jpg", "jpeg", "png", "webp"], "Solo imágenes JPG, PNG o WEBP.")])
+    submit = SubmitField("Publicar noticia")
+
+
 class ReviewForm(FlaskForm):
     rating = IntegerField("Valoración", validators=[DataRequired(), NumberRange(min=1, max=5)])
     comment = TextAreaField("Comentario", validators=[Optional(), Length(max=500)])

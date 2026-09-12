@@ -224,6 +224,52 @@ class Hotel(db.Model):
         }
 
 
+class PlaceRecommendation(db.Model):
+    __tablename__ = "place_recommendations"
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
+    name = db.Column(db.String(150), nullable=False)
+    description = db.Column(db.Text, nullable=False)
+    city = db.Column(db.String(80), nullable=False)
+    category = db.Column(db.String(40), nullable=False, default="cultura")
+    address = db.Column(db.String(200), default="")
+    latitude = db.Column(db.Float, nullable=True)
+    longitude = db.Column(db.Float, nullable=True)
+    image = db.Column(db.String(255), default="default-place.svg")
+    status = db.Column(db.String(20), nullable=False, default="pending")
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    recommender = db.relationship("User", backref="place_recommendations")
+
+
+class NewsArticle(db.Model):
+    __tablename__ = "news_articles"
+
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(180), nullable=False)
+    summary = db.Column(db.String(300), nullable=False)
+    body = db.Column(db.Text, nullable=False)
+    category = db.Column(db.String(40), nullable=False, default="actualidad")
+    image = db.Column(db.String(255), default="default-news.svg")
+    source_url = db.Column(db.String(500), default="")
+    published_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    is_published = db.Column(db.Boolean, default=True, nullable=False)
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "title": self.title,
+            "summary": self.summary,
+            "body": self.body,
+            "category": self.category,
+            "image": self.image,
+            "source_url": self.source_url,
+            "published_at": self.published_at.isoformat() if self.published_at else None,
+        }
+
+
 class Favorite(db.Model):
     __tablename__ = "favorites"
 
