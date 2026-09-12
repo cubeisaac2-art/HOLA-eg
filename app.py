@@ -322,7 +322,7 @@ def create_app(config_name: str = "default"):
             is_favorite = Favorite.query.filter_by(user_id=current_user.id, content_type="food", content_id=item_id).first() is not None
         return render_template("food/detail.html", item=item, reviews=reviews, form=form, is_favorite=is_favorite)
 
-    @app.route("/plato/<int:item_id>-<slug>")
+    @app.route("/plato/<slug>-<int:item_id>")
     def shared_food_detail(item_id, slug):
         return redirect(url_for("food_detail", item_id=item_id), code=301)
 
