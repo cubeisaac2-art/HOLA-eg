@@ -54,3 +54,13 @@ DATABASE_URL=postgresql://usuario:contraseña@host:5432/hola_guinea
 ```powershell
 python -m pytest -q
 ```
+
+## Importar diccionario Fang
+
+El importador acepta la extracción de texto del diccionario Fang-Español, evita duplicados y conserva el origen de cada entrada:
+
+```powershell
+python scripts/import_fang_dictionary.py "C:\ruta\diccionario_fang_espanol.txt"
+```
+
+Si `DATABASE_URL` está definida, la importación se realiza en PostgreSQL; si no, usa la SQLite local. El archivo fuente no se incluye en el repositorio.
