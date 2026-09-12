@@ -8,7 +8,7 @@ from app import create_app
 from models import db, DictionaryEntry, User
 
 ENTRY_PATTERN = re.compile(
-    r"^(?P<term>[^\t]+?)\s+(?:\d+(?:/\d+)?\s+)?"
+    r"^(?P<term>[^\t]+?)\s+(?:\d+(?:/\d+)?\s+)?(?:pref\.|ext\.)?\s*"
     r"(?P<marker>n\.|ad\. v\.|interj\.?|interr\.?|prep\.?|conj\.?|afirm\.?|neg\.?|indef\.?|num\.?|"
     r"pos\. pers\.?|in\. v\.|intrj\.?|intr\./tr\.?|3\.ª pers\./sing\.)\s+(?P<meaning>.+)$",
     re.IGNORECASE,
