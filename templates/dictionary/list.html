@@ -4,7 +4,7 @@
 <section class="py-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1 class="mb-0">Diccionario de lenguas vernáculas</h1>
-        <div class="d-flex gap-2"><a class="btn btn-primary" href="{{ url_for('new_dictionary_entry') }}">Añadir entrada</a>{% if current_user.is_authenticated and current_user.can_manage_dictionary %}<a class="btn btn-outline-secondary" href="{{ url_for('admin_dictionary') }}">Gestionar</a>{% endif %}</div>
+        {% if current_user.is_authenticated and current_user.can_manage_dictionary %}<div class="d-flex gap-2"><a class="btn btn-primary" href="{{ url_for('new_dictionary_entry') }}">Añadir entrada</a><a class="btn btn-outline-secondary" href="{{ url_for('admin_dictionary') }}">Gestionar</a></div>{% endif %}
     </div>
 
     <form method="get" class="card shadow-sm border-0 mb-4">
