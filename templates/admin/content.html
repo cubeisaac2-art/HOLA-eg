@@ -1,0 +1,93 @@
+{% extends 'base.html' %}
+{% block title %}Contenido | HOLA GUINEA{% endblock %}
+{% block content %}
+<section class="py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="mb-0">Contenido de la plataforma</h1>
+        <a class="btn btn-primary" href="{{ url_for('admin_dashboard') }}">Volver al panel</a>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <h3>Comidas</h3>
+                    <div class="list-group list-group-flush">
+                        {% for item in foods %}
+                            <div class="list-group-item d-flex justify-content-between align-items-center gap-2">
+                                <div>
+                                    <strong>{{ item.name }}</strong>
+                                    <div class="small text-muted">{{ item.city }}</div>
+                                </div>
+                                <a class="btn btn-sm btn-outline-primary" href="{{ url_for('food_detail', item_id=item.id) }}">Ver</a>
+                            </div>
+                        {% else %}
+                            <div class="text-muted">No hay comidas añadidas.</div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <h3>Restaurantes</h3>
+                    <div class="list-group list-group-flush">
+                        {% for item in restaurants %}
+                            <div class="list-group-item d-flex justify-content-between align-items-center gap-2">
+                                <div>
+                                    <strong>{{ item.name }}</strong>
+                                    <div class="small text-muted">{{ item.city }}</div>
+                                </div>
+                                <a class="btn btn-sm btn-outline-primary" href="{{ url_for('restaurant_detail', item_id=item.id) }}">Ver</a>
+                            </div>
+                        {% else %}
+                            <div class="text-muted">No hay restaurantes añadidos.</div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <h3>Hoteles</h3>
+                    <div class="list-group list-group-flush">
+                        {% for item in hotels %}
+                            <div class="list-group-item d-flex justify-content-between align-items-center gap-2">
+                                <div>
+                                    <strong>{{ item.name }}</strong>
+                                    <div class="small text-muted">{{ item.city }}</div>
+                                </div>
+                                <a class="btn btn-sm btn-outline-primary" href="{{ url_for('hotel_detail', item_id=item.id) }}">Ver</a>
+                            </div>
+                        {% else %}
+                            <div class="text-muted">No hay hoteles añadidos.</div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <h3>Diccionario</h3>
+                    <div class="list-group list-group-flush">
+                        {% for item in dictionary %}
+                            <div class="list-group-item">
+                                <strong>{{ item.term }}</strong> = {{ item.translation }}
+                                <div class="small text-muted">{{ item.language }} · {{ item.category }}</div>
+                            </div>
+                        {% else %}
+                            <div class="text-muted">No hay entradas aún.</div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

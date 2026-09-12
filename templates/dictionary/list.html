@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+{% block title %}Diccionario | HOLA GUINEA{% endblock %}
+{% block content %}
+<section class="py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="mb-0">Diccionario de lenguas vernáculas</h1>
+        <a class="btn btn-primary" href="{{ url_for('new_dictionary_entry') }}">Añadir entrada</a>
+    </div>
+
+    <form method="get" class="card shadow-sm border-0 mb-4">
+        <div class="card-body row g-3 align-items-end">
+            <div class="col-md-4">
+                <label class="form-label">Búsqueda</label>
+                <input name="q" value="{{ query }}" class="form-control" placeholder="Buscar término o traducción">
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Idioma</label>
+                <select name="language" class="form-select">
+                    <option value="all" {% if language == 'all' %}selected{% endif %}>Todos</option>
+                    <option value="fang" {% if language == 'fang' %}selected{% endif %}>Fang</option>
+                    <option value="bubi" {% if language == 'bubi' %}selected{% endif %}>Bubi</option>
+                    <option value="ndowe" {% if language == 'ndowe' %}selected{% endif %}>Ndowe</option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <button class="btn btn-primary w-100" type="submit">Buscar</button>
+            </div>
+        </div>
+    </form>
+
+    <div class="row g-3">
+        {% for entry in entries %}
+            <div class="col-md-6">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <h5 class="mb-1">{{ entry.term }}</h5>
+                            <span class="badge text-bg-light">{{ entry.language }}</span>
+                        </div>
+                        <p class="lead mb-2">{{ entry.translation }}</p>
+                        <p class="text-muted mb-0">{{ entry.notes or 'Sin notas adicionales.' }}</p>
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <div class="col-12">
+                <div class="alert alert-info">No hay entradas para esta búsqueda.</div>
+            </div>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

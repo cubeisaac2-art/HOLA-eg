@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+{% block title %}{{ item.name }} | HOLA GUINEA{% endblock %}
+{% block content %}
+<section class="py-4">
+    <div class="row g-4">
+        <div class="col-lg-6">
+            <img src="{{ url_for('static', filename='uploads/' + item.image) }}" class="img-fluid rounded-4 shadow-sm" alt="{{ item.name }}">
+        </div>
+        <div class="col-lg-6">
+            <h1>{{ item.name }}</h1>
+            <p class="text-muted">{{ item.city }} · {{ item.price_level }}</p>
+            <p>{{ item.description }}</p>
+            <ul class="list-group list-group-flush mb-3">
+                <li class="list-group-item">Dirección: {{ item.address or 'No indicada' }}</li>
+                <li class="list-group-item">Teléfono: {{ item.phone or 'No disponible' }}</li>
+                <li class="list-group-item">WhatsApp: {{ item.whatsapp or 'No disponible' }}</li>
+            </ul>
+            <div class="d-flex gap-2 flex-wrap">
+                <button class="btn btn-outline-primary favorite-toggle" data-content-type="restaurant" data-content-id="{{ item.id }}">{% if is_favorite %}Quitar favorito{% else %}Añadir favorito{% endif %}</button>
+                <a class="btn btn-primary" href="{{ url_for('restaurants') }}">Volver</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-5">
+        <h3>Reseñas</h3>
+        {% if current_user.is_authenticated %}
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body">
+                    <h5>Enviar valoración</h5>
+                    <form method="post" action="{{ url_for('submit_review', content_type='restaurant', content_id=item.id) }}">
+                        {{ form.hidden_tag() }}
+                        <div class="row g-3">
+                            <div class="col-md-3">
+                                <label class="form-label" for="rating">Valoración</label>
+                                <select class="form-select" id="rating" name="rating">
+                                    <option value="5">5 ★</option>
+                                    <option value="4">4 ★</option>
+                                    <option value="3">3 ★</option>
+                                    <option value="2">2 ★</option>
+                                    <option value="1">1 ★</option>
+                                </select>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label" for="comment">Comentario</label>
+                                <textarea class="form-control" id="comment" name="comment" rows="3" placeholder="Cuéntanos tu experiencia..."></textarea>
+                            </div>
+                            <div class="col-12">
+                                <button class="btn btn-primary" type="submit">Enviar</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        {% endif %}
+
+        {% if reviews %}
+            {% for review in reviews %}
+                <div class="card mb-3 border-0 shadow-sm">
+                    <div class="card-body">
+                        <strong>Usuario #{{ review.user_id }}</strong>
+                        <div class="text-warning">{{ '★' * review.rating }}{{ '☆' * (5 - review.rating) }}</div>
+                        <p class="mb-0">{{ review.comment or 'Sin comentario.' }}</p>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="alert alert-info">Todavía no hay reseñas para este restaurante.</div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

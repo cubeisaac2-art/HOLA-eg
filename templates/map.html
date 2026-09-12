@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% block title %}Mapa | HOLA GUINEA{% endblock %}
+{% block content %}
+<section class="py-4">
+    <h1 class="mb-4">Mapa interactivo</h1>
+    <div id="map" style="height: 500px; width: 100%; border-radius: 16px; overflow: hidden;"></div>
+</section>
+{% block scripts %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script>
+    const map = L.map('map').setView([3.75, 8.78], 7);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    const places = [
+        {% for item in restaurants %}
+            {
+                name: '{{ item.name|e }}',
+                type: 'Restaurante',
+                lat: {{ item.latitude }},
+                lng: {{ item.longitude }},
+                popup: '<strong>{{ item.name|e }}</strong><br>{{ item.city|e }}<br><a href="{{ url_for('restaurant_detail', item_id=item.id) }}">Ver detalle</a>'
+            },
+        {% endfor %}
+        {% for item in hotels %}
+            {
+                name: '{{ item.name|e }}',
+                type: 'Hotel',
+                lat: {{ item.latitude }},
+                lng: {{ item.longitude }},
+                popup: '<strong>{{ item.name|e }}</strong><br>{{ item.city|e }}<br><a href="{{ url_for('hotel_detail', item_id=item.id) }}">Ver detalle</a>'
+            },
+        {% endfor %}
+    ];
+
+    places.forEach(place => {
+        const marker = L.marker([place.lat, place.lng]).addTo(map);
+        marker.bindPopup(place.popup);
+    });
+</script>
+{% endblock %}
+{% endblock %}

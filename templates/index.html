@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+
+{% block title %}HOLA GUINEA | Inicio{% endblock %}
+
+{% block content %}
+<section class="hero-section py-5 mb-4">
+    <div class="row align-items-center g-4">
+        <div class="col-lg-7">
+            <span class="badge text-bg-primary mb-3">Guinea Ecuatorial en tu bolsillo</span>
+            <h1 class="display-5 fw-bold mb-3">Descubre la cultura, la gastronomía y los lugares clave de Guinea Ecuatorial.</h1>
+            <p class="lead text-muted">Una PWA moderna hecha para moverse en la práctica diaria: diccionario lingüístico, guía local, favoritos, reseñas y mapa interactivo.</p>
+            <div class="d-flex flex-wrap gap-3 mt-4">
+                <a class="btn btn-primary btn-lg" href="{{ url_for('dictionary') }}">Explorar diccionario</a>
+                <a class="btn btn-outline-primary btn-lg" href="{{ url_for('map_view') }}">Ver mapa</a>
+            </div>
+        </div>
+        <div class="col-lg-5">
+            <div class="card shadow-sm border-0 rounded-4 overflow-hidden">
+                <img src="https://images.unsplash.com/photo-1517457373958-b7bdd4587205?auto=format&fit=crop&w=900&q=80" class="img-fluid" alt="Guinea Ecuatorial">
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="row g-4 mb-5">
+    <div class="col-md-3">
+        <div class="card h-100 border-0 shadow-sm">
+            <div class="card-body">
+                <div class="icon-badge mb-3"><i class="bi bi-translate"></i></div>
+                <h5>Diccionario</h5>
+                <p class="text-muted mb-0">Lenguas vernáculas y traducciones rápidas.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card h-100 border-0 shadow-sm">
+            <div class="card-body">
+                <div class="icon-badge mb-3"><i class="bi bi-cup-straw"></i></div>
+                <h5>Gastronomía</h5>
+                <p class="text-muted mb-0">Sabores cotidianos y platos típicos locales.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card h-100 border-0 shadow-sm">
+            <div class="card-body">
+                <div class="icon-badge mb-3"><i class="bi bi-map"></i></div>
+                <h5>Mapa</h5>
+                <p class="text-muted mb-0">Localiza restaurantes y hoteles cercanos.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card h-100 border-0 shadow-sm">
+            <div class="card-body">
+                <div class="icon-badge mb-3"><i class="bi bi-bell-fill"></i></div>
+                <h5>Push</h5>
+                <p class="text-muted mb-0">Notificaciones útiles y avisos relevantes.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="mb-5">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="mb-0">Destacados</h2>
+        <a class="btn btn-link" href="{{ url_for('food_list') }}">Ver más</a>
+    </div>
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm border-0">
+                <img src="https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=900&q=80" class="card-img-top" alt="Comida">
+                <div class="card-body">
+                    <h5 class="card-title">Pepiá</h5>
+                    <p class="card-text text-muted">Plato emblemático con tradición local y mucho sabor.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm border-0">
+                <img src="https://images.unsplash.com/photo-1552566626-52f8b828add9?auto=format&fit=crop&w=900&q=80" class="card-img-top" alt="Restaurante">
+                <div class="card-body">
+                    <h5 class="card-title">Restaurantes</h5>
+                    <p class="card-text text-muted">Descubre sitios con ambiente local e internacional.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm border-0">
+                <img src="https://images.unsplash.com/photo-1502920514313-52581002a659?auto=format&fit=crop&w=900&q=80" class="card-img-top" alt="Hotel">
+                <div class="card-body">
+                    <h5 class="card-title">Hoteles</h5>
+                    <p class="card-text text-muted">Alojamientos recomendados para viajeros y residentes.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

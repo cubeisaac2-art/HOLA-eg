@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% block title %}Favoritos | HOLA GUINEA{% endblock %}
+{% block content %}
+<section class="py-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h1 class="mb-0">Favoritos</h1>
+    </div>
+    {% if favorites %}
+        <div class="row g-3">
+            {% for item in favorites %}
+                <div class="col-md-6">
+                    <div class="card shadow-sm border-0 h-100">
+                        <div class="card-body">
+                            <span class="badge text-bg-light mb-2">{{ item.content_type }}</span>
+                            <h5>{{ item.label }}</h5>
+                            <p class="text-muted mb-3">Guardado el {{ item.created_at.strftime('%d/%m/%Y') }}</p>
+                            <a class="btn btn-primary btn-sm" href="{{ item.url }}">Abrir</a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="alert alert-info">Todavía no has marcado favoritos.</div>
+    {% endif %}
+</section>
+{% endblock %}

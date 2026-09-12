@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+{% block title %}Usuarios | HOLA GUINEA{% endblock %}
+{% block content %}
+<section class="py-4">
+    <h1 class="mb-4">Gestión de usuarios</h1>
+    <div class="table-responsive">
+        <table class="table table-striped align-middle">
+            <thead>
+                <tr>
+                    <th>Nombre</th>
+                    <th>Email</th>
+                    <th>Rol</th>
+                    <th>Estado</th>
+                    <th>Acción</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in users %}
+                <tr>
+                    <td>{{ user.full_name }}</td>
+                    <td>{{ user.email }}</td>
+                    <td>{{ user.role }}</td>
+                    <td>
+                        {% if user.is_active %}
+                            <span class="badge text-bg-success">Activo</span>
+                        {% else %}
+                            <span class="badge text-bg-secondary">Inactivo</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <form action="{{ url_for('toggle_user_status', user_id=user.id) }}" method="post">
+                            <button class="btn btn-sm btn-outline-primary" type="submit">
+                                {% if user.is_active %}Desactivar{% else %}Activar{% endif %}
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}

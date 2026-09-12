@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+{% block title %}{{ title }} | HOLA GUINEA{% endblock %}
+{% block content %}
+<section class="py-5 row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card shadow-sm border-0">
+            <div class="card-body p-4">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h1 class="mb-0">{{ title }}</h1>
+                    <a class="btn btn-outline-secondary" href="{{ url_for('admin_content') }}">Volver</a>
+                </div>
+
+                <form method="post" enctype="multipart/form-data">
+                    {{ form.hidden_tag() }}
+
+                    <div class="row g-3">
+                        <div class="col-md-6">{{ form.name.label(class_='form-label') }}{{ form.name(class_='form-control') }}</div>
+                        <div class="col-md-6">{{ form.city.label(class_='form-label') }}{{ form.city(class_='form-control') }}</div>
+
+                        <div class="col-12">{{ form.description.label(class_='form-label') }}{{ form.description(class_='form-control', rows=4) }}</div>
+
+                        {% if form.address is defined %}
+                        <div class="col-md-6">{{ form.address.label(class_='form-label') }}{{ form.address(class_='form-control') }}</div>
+                        <div class="col-md-6">{{ form.phone.label(class_='form-label') }}{{ form.phone(class_='form-control') }}</div>
+                        {% endif %}
+
+                        {% if form.whatsapp is defined %}
+                        <div class="col-md-6">{{ form.whatsapp.label(class_='form-label') }}{{ form.whatsapp(class_='form-control') }}</div>
+                        <div class="col-md-6">{{ form.website.label(class_='form-label') }}{{ form.website(class_='form-control') }}</div>
+                        {% endif %}
+
+                        <div class="col-md-4">{{ form.price_level.label(class_='form-label') }}{{ form.price_level(class_='form-select') }}</div>
+                        <div class="col-md-4">{{ form.category.label(class_='form-label') if form.category is defined else '' }}{{ form.category(class_='form-select') if form.category is defined else '' }}</div>
+                        <div class="col-md-4">{{ form.stars.label(class_='form-label') if form.stars is defined else '' }}{{ form.stars(class_='form-control') if form.stars is defined else '' }}</div>
+
+                        {% if form.latitude is defined %}
+                        <div class="col-md-6">{{ form.latitude.label(class_='form-label') }}{{ form.latitude(class_='form-control') }}</div>
+                        <div class="col-md-6">{{ form.longitude.label(class_='form-label') }}{{ form.longitude(class_='form-control') }}</div>
+                        {% endif %}
+
+                        <div class="col-12">{{ form.image.label(class_='form-label') }}{{ form.image(class_='form-control') }}</div>
+                    </div>
+
+                    <div class="mt-4">
+                        <button type="submit" class="btn btn-primary">{{ submit_label }}</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

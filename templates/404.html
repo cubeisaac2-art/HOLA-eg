@@ -1,0 +1,9 @@
+{% extends 'base.html' %}
+{% block title %}No encontrado | HOLA GUINEA{% endblock %}
+{% block content %}
+<section class="py-5 text-center">
+    <h1 class="display-4">404</h1>
+    <p class="lead text-muted">La página que buscas no existe.</p>
+    <a class="btn btn-primary" href="{{ url_for('index') }}">Volver al inicio</a>
+</section>
+{% endblock %}
