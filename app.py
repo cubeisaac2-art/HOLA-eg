@@ -1,6 +1,7 @@
 import os
 import re
 import unicodedata
+from pathlib import Path
 from datetime import datetime
 
 from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify
@@ -47,6 +48,32 @@ def log_activity(user_id, action, details=""):
 def dish_slug(name):
     normalized = unicodedata.normalize("NFKD", name).encode("ascii", "ignore").decode("ascii")
     return re.sub(r"[^a-z0-9]+", "-", normalized.lower()).strip("-") or "plato"
+
+
+def import_bundled_fang_dictionary():
+    source_path = Path(__file__).resolve().parent / "diccionario_fang_espanol (1).txt"
+    if not source_path.exists():
+        return
+    admin = User.query.filter_by(email="admin@holaguinea.com").first()
+    if admin is None:
+        return
+    pattern = re.compile(r"^(?P<term>[^\t]+?)\s+(?:\d+(?:/\d+)?\s+)?(?:pref\.|ext\.)?\s*(?P<marker>n\.|ad\. v\.|interj\.?|interr\.?|prep\.?|conj\.?|afirm\.?|neg\.?|indef\.?|num\.?|pos\. pers\.?|in\. v\.)\s+(?P<meaning>.+)$", re.IGNORECASE)
+    added = 0
+    for raw_line in source_path.read_text(encoding="utf-8").splitlines():
+        match = pattern.match(raw_line.strip())
+        if not match:
+            continue
+        term = re.sub(r"^[¹²'\"*]+|[¹²'\"*]+$", "", match.group("term")).strip(" ,")
+        translation = re.sub(r"\s+", " ", match.group("meaning").split(";", 1)[0].strip())
+        if not term or len(term) > 120 or not translation or len(translation) > 180:
+            continue
+        exists = DictionaryEntry.query.filter_by(term=term, translation=translation, language="fang").first()
+        if exists:
+            continue
+        db.session.add(DictionaryEntry(term=term, translation=translation, language="fang", category="general", notes="Importado de la sección Fang-Español, letra A.", created_by_id=admin.id))
+        added += 1
+    if added:
+        db.session.commit()
 
 
 def send_push_notification(target_scope="all", title="HOLA GUINEA", body="Nueva actualización disponible.", target_user_id=None):
@@ -121,6 +148,7 @@ def create_app(config_name: str = "default"):
         db.create_all()
         ensure_schema_columns()
         seed_data()
+        import_bundled_fang_dictionary()
 
     @app.context_processor
     def share_helpers():
