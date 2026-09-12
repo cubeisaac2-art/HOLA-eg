@@ -36,6 +36,30 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
+    document.querySelectorAll('[data-share-title]').forEach((button) => {
+        button.addEventListener('click', async () => {
+            const title = button.dataset.shareTitle;
+            const url = button.dataset.shareUrl || window.location.href;
+            const shareData = { title, text: title, url };
+
+            try {
+                if (navigator.share) {
+                    await navigator.share(shareData);
+                    return;
+                }
+                await navigator.clipboard.writeText(url);
+                button.innerHTML = '<i class="bi bi-check2 me-1"></i>Enlace copiado';
+                window.setTimeout(() => {
+                    button.innerHTML = '<i class="bi bi-share me-1"></i>Compartir';
+                }, 2200);
+            } catch (error) {
+                if (error.name !== 'AbortError') {
+                    window.open(`https://wa.me/?text=${encodeURIComponent(`${title} ${url}`)}`, '_blank', 'noopener');
+                }
+            }
+        });
+    });
+
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
             navigator.serviceWorker.register('/static/js/sw.js').catch((error) => {

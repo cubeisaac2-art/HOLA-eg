@@ -16,6 +16,8 @@
                 <li class="list-group-item">Web: {{ item.website or 'No disponible' }}</li>
             </ul>
             <div class="d-flex gap-2 flex-wrap">
+                <button class="btn btn-primary" type="button" data-share-title="{{ item.name|e }}" data-share-url="{{ url_for('hotel_detail', item_id=item.id, _external=True) }}"><i class="bi bi-share me-1"></i>Compartir</button>
+                <a class="btn btn-success" href="https://wa.me/?text={{ (item.name ~ ' ' ~ url_for('hotel_detail', item_id=item.id, _external=True))|urlencode }}" target="_blank" rel="noopener"><i class="bi bi-whatsapp me-1"></i>WhatsApp</a>
                 <button class="btn btn-outline-primary favorite-toggle" data-content-type="hotel" data-content-id="{{ item.id }}">{% if is_favorite %}Quitar favorito{% else %}Añadir favorito{% endif %}</button>
                 <a class="btn btn-primary" href="{{ url_for('hotels') }}">Volver</a>
             </div>
