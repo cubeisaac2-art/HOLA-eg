@@ -1,11 +1,11 @@
 {% extends 'base.html' %}
-{% block title %}Nueva entrada | HOLA GUINEA{% endblock %}
+{% block title %}{{ title or 'Nueva entrada' }} | HOLA GUINEA{% endblock %}
 {% block content %}
 <section class="py-5 row justify-content-center">
     <div class="col-lg-7">
         <div class="card shadow-sm border-0">
             <div class="card-body p-4">
-                <h1 class="mb-4">Añadir entrada</h1>
+                <h1 class="mb-4">{{ title or 'Añadir entrada' }}</h1>
                 <form method="post">
                     {{ form.hidden_tag() }}
                     <div class="mb-3">{{ form.term.label(class_='form-label') }}{{ form.term(class_='form-control') }}</div>
@@ -13,7 +13,7 @@
                     <div class="mb-3">{{ form.language.label(class_='form-label') }}{{ form.language(class_='form-select') }}</div>
                     <div class="mb-3">{{ form.category.label(class_='form-label') }}{{ form.category(class_='form-select') }}</div>
                     <div class="mb-3">{{ form.notes.label(class_='form-label') }}{{ form.notes(class_='form-control', rows=4) }}</div>
-                    {{ form.submit(class_='btn btn-primary') }}
+                    {{ form.submit(class_='btn btn-primary', value=submit_label or 'Guardar') }}
                 </form>
             </div>
         </div>

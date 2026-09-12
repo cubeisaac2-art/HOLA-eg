@@ -20,6 +20,17 @@
         {% endfor %}
     </div>
 
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body">
+            <h2 class="h4">Gestionar contenido</h2>
+            <div class="d-flex flex-wrap gap-2">
+                <a class="btn btn-outline-primary" href="{{ url_for('admin_users') }}">Usuarios</a>
+                <a class="btn btn-outline-primary" href="{{ url_for('admin_dictionary') }}">Diccionario</a>
+                <a class="btn btn-outline-primary" href="{{ url_for('admin_content') }}">Comidas, restaurantes, hoteles y noticias</a>
+            </div>
+        </div>
+    </div>
+
     <div class="card shadow-sm border-0">
         <div class="card-body">
             <h3>Actividad reciente</h3>

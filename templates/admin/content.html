@@ -19,7 +19,7 @@
                                     <strong>{{ item.name }}</strong>
                                     <div class="small text-muted">{{ item.city }}</div>
                                 </div>
-                                <a class="btn btn-sm btn-outline-primary" href="{{ url_for('food_detail', item_id=item.id) }}">Ver</a>
+                                <div class="d-flex gap-2"><a class="btn btn-sm btn-outline-primary" href="{{ url_for('food_detail', item_id=item.id) }}">Ver</a><a class="btn btn-sm btn-outline-secondary" href="{{ url_for('admin_edit_food', item_id=item.id) }}">Editar</a></div>
                             </div>
                         {% else %}
                             <div class="text-muted">No hay comidas añadidas.</div>
@@ -43,7 +43,7 @@
         </div>
 
         <div class="col-12">
-            <div class="card border-0 shadow-sm"><div class="card-body"><h3>Noticias publicadas</h3><div class="list-group list-group-flush">{% for article in articles %}<div class="list-group-item d-flex justify-content-between align-items-center"><div><strong>{{ article.title }}</strong><div class="small text-muted">{{ article.category }}</div></div><a class="btn btn-sm btn-outline-primary" href="{{ url_for('news_detail', article_id=article.id) }}">Ver</a></div>{% else %}<div class="text-muted">No hay noticias.</div>{% endfor %}</div></div></div>
+            <div class="card border-0 shadow-sm"><div class="card-body"><h3>Noticias publicadas</h3><div class="list-group list-group-flush">{% for article in articles %}<div class="list-group-item d-flex justify-content-between align-items-center"><div><strong>{{ article.title }}</strong><div class="small text-muted">{{ article.category }}</div></div><div class="d-flex gap-2"><a class="btn btn-sm btn-outline-primary" href="{{ url_for('news_detail', article_id=article.id) }}">Ver</a><a class="btn btn-sm btn-outline-secondary" href="{{ url_for('admin_edit_news', article_id=article.id) }}">Editar</a></div></div>{% else %}<div class="text-muted">No hay noticias.</div>{% endfor %}</div></div></div>
         </div>
 
         <div class="col-md-6">
@@ -57,7 +57,7 @@
                                     <strong>{{ item.name }}</strong>
                                     <div class="small text-muted">{{ item.city }}</div>
                                 </div>
-                                <a class="btn btn-sm btn-outline-primary" href="{{ url_for('restaurant_detail', item_id=item.id) }}">Ver</a>
+                                <div class="d-flex gap-2"><a class="btn btn-sm btn-outline-primary" href="{{ url_for('restaurant_detail', item_id=item.id) }}">Ver</a><a class="btn btn-sm btn-outline-secondary" href="{{ url_for('admin_edit_restaurant', item_id=item.id) }}">Editar</a></div>
                             </div>
                         {% else %}
                             <div class="text-muted">No hay restaurantes añadidos.</div>
@@ -78,7 +78,7 @@
                                     <strong>{{ item.name }}</strong>
                                     <div class="small text-muted">{{ item.city }}</div>
                                 </div>
-                                <a class="btn btn-sm btn-outline-primary" href="{{ url_for('hotel_detail', item_id=item.id) }}">Ver</a>
+                                <div class="d-flex gap-2"><a class="btn btn-sm btn-outline-primary" href="{{ url_for('hotel_detail', item_id=item.id) }}">Ver</a><a class="btn btn-sm btn-outline-secondary" href="{{ url_for('admin_edit_hotel', item_id=item.id) }}">Editar</a></div>
                             </div>
                         {% else %}
                             <div class="text-muted">No hay hoteles añadidos.</div>

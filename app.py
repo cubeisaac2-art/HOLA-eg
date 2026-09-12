@@ -464,6 +464,67 @@ def create_app(config_name: str = "default"):
         users = User.query.order_by(User.created_at.desc()).all()
         return render_template("admin/users.html", users=users)
 
+    @app.route("/admin/dictionary")
+    @login_required
+    def admin_dictionary():
+        if not current_user.is_admin:
+            flash("No tienes permisos de administrador.", "danger")
+            return redirect(url_for("index"))
+        entries = DictionaryEntry.query.order_by(DictionaryEntry.term).all()
+        return render_template("admin/dictionary.html", entries=entries)
+
+    @app.route("/admin/dictionary/new", methods=["GET", "POST"])
+    @login_required
+    def admin_new_dictionary_entry():
+        if not current_user.is_admin:
+            flash("No tienes permisos de administrador.", "danger")
+            return redirect(url_for("index"))
+        form = DictionaryForm()
+        if form.validate_on_submit():
+            entry = DictionaryEntry(
+                term=form.term.data.strip(),
+                translation=form.translation.data.strip(),
+                language=form.language.data,
+                category=form.category.data,
+                notes=(form.notes.data or "").strip(),
+                created_by_id=current_user.id,
+            )
+            db.session.add(entry)
+            db.session.commit()
+            flash("Palabra añadida correctamente.", "success")
+            return redirect(url_for("admin_dictionary"))
+        return render_template("dictionary/form.html", form=form, title="Nueva palabra", submit_label="Añadir palabra")
+
+    @app.route("/admin/dictionary/<int:entry_id>/edit", methods=["GET", "POST"])
+    @login_required
+    def admin_edit_dictionary_entry(entry_id):
+        if not current_user.is_admin:
+            flash("No tienes permisos de administrador.", "danger")
+            return redirect(url_for("index"))
+        entry = DictionaryEntry.query.get_or_404(entry_id)
+        form = DictionaryForm(obj=entry)
+        if form.validate_on_submit():
+            entry.term = form.term.data.strip()
+            entry.translation = form.translation.data.strip()
+            entry.language = form.language.data
+            entry.category = form.category.data
+            entry.notes = (form.notes.data or "").strip()
+            db.session.commit()
+            flash("Palabra actualizada correctamente.", "success")
+            return redirect(url_for("admin_dictionary"))
+        return render_template("dictionary/form.html", form=form, title="Editar palabra", submit_label="Guardar cambios")
+
+    @app.route("/admin/dictionary/<int:entry_id>/delete", methods=["POST"])
+    @login_required
+    def admin_delete_dictionary_entry(entry_id):
+        if not current_user.is_admin:
+            return jsonify({"status": "forbidden"}), 403
+        entry = DictionaryEntry.query.get_or_404(entry_id)
+        db.session.delete(entry)
+        db.session.commit()
+        flash("Palabra eliminada correctamente.", "success")
+        return redirect(url_for("admin_dictionary"))
+
     @app.route("/admin/users/<int:user_id>/toggle-status", methods=["POST"])
     @login_required
     def toggle_user_status(user_id):
@@ -544,6 +605,28 @@ def create_app(config_name: str = "default"):
             return redirect(url_for("admin_content"))
         return render_template("admin/news_form.html", form=form)
 
+    @app.route("/admin/content/news/<int:article_id>/edit", methods=["GET", "POST"])
+    @login_required
+    def admin_edit_news(article_id):
+        if not current_user.is_admin:
+            flash("No tienes permisos de administrador.", "danger")
+            return redirect(url_for("index"))
+        article = NewsArticle.query.get_or_404(article_id)
+        form = NewsForm(obj=article)
+        if form.validate_on_submit():
+            article.title = form.title.data.strip()
+            article.summary = form.summary.data.strip()
+            article.body = form.body.data.strip()
+            article.category = form.category.data
+            article.source_url = (form.source_url.data or "").strip()
+            if getattr(form.image.data, "filename", ""):
+                article.image = save_upload_image(form.image.data, folder="news")
+            db.session.commit()
+            log_activity(current_user.id, "news_updated", f"Noticia actualizada: {article.title}")
+            flash("Noticia actualizada correctamente.", "success")
+            return redirect(url_for("admin_content"))
+        return render_template("admin/news_form.html", form=form, title="Editar noticia", submit_label="Guardar cambios")
+
     @app.route("/admin/content/food/new", methods=["GET", "POST"])
     @login_required
     def admin_new_food():
@@ -572,6 +655,28 @@ def create_app(config_name: str = "default"):
             return redirect(url_for("admin_content"))
 
         return render_template("admin/content_form.html", form=form, title="Nueva comida", submit_label="Crear comida", action_url=url_for("admin_new_food"))
+
+    @app.route("/admin/content/food/<int:item_id>/edit", methods=["GET", "POST"])
+    @login_required
+    def admin_edit_food(item_id):
+        if not current_user.is_admin:
+            flash("No tienes permisos de administrador.", "danger")
+            return redirect(url_for("index"))
+        item = FoodItem.query.get_or_404(item_id)
+        form = FoodForm(obj=item)
+        if form.validate_on_submit():
+            item.name = form.name.data.strip()
+            item.description = form.description.data.strip()
+            item.city = form.city.data.strip()
+            item.price_level = form.price_level.data
+            item.category = form.category.data
+            if getattr(form.image.data, "filename", ""):
+                item.image = save_upload_image(form.image.data, folder="food")
+            db.session.commit()
+            log_activity(current_user.id, "food_updated", f"Comida actualizada: {item.name}")
+            flash("Comida actualizada correctamente.", "success")
+            return redirect(url_for("admin_content"))
+        return render_template("admin/content_form.html", form=form, title="Editar comida", submit_label="Guardar cambios", action_url=url_for("admin_edit_food", item_id=item.id))
 
     @app.route("/admin/content/restaurant/new", methods=["GET", "POST"])
     @login_required
@@ -607,6 +712,33 @@ def create_app(config_name: str = "default"):
 
         return render_template("admin/content_form.html", form=form, title="Nuevo restaurante", submit_label="Crear restaurante", action_url=url_for("admin_new_restaurant"))
 
+    @app.route("/admin/content/restaurant/<int:item_id>/edit", methods=["GET", "POST"])
+    @login_required
+    def admin_edit_restaurant(item_id):
+        if not current_user.is_admin:
+            flash("No tienes permisos de administrador.", "danger")
+            return redirect(url_for("index"))
+        item = Restaurant.query.get_or_404(item_id)
+        form = RestaurantForm(obj=item)
+        if form.validate_on_submit():
+            item.name = form.name.data.strip()
+            item.description = form.description.data.strip()
+            item.city = form.city.data.strip()
+            item.address = (form.address.data or "").strip()
+            item.phone = (form.phone.data or "").strip()
+            item.whatsapp = (form.whatsapp.data or "").strip()
+            item.price_level = form.price_level.data
+            item.stars = form.stars.data or 3
+            item.latitude = form.latitude.data
+            item.longitude = form.longitude.data
+            if getattr(form.image.data, "filename", ""):
+                item.image = save_upload_image(form.image.data, folder="restaurants")
+            db.session.commit()
+            log_activity(current_user.id, "restaurant_updated", f"Restaurante actualizado: {item.name}")
+            flash("Restaurante actualizado correctamente.", "success")
+            return redirect(url_for("admin_content"))
+        return render_template("admin/content_form.html", form=form, title="Editar restaurante", submit_label="Guardar cambios", action_url=url_for("admin_edit_restaurant", item_id=item.id))
+
     @app.route("/admin/content/hotel/new", methods=["GET", "POST"])
     @login_required
     def admin_new_hotel():
@@ -640,6 +772,33 @@ def create_app(config_name: str = "default"):
             return redirect(url_for("admin_content"))
 
         return render_template("admin/content_form.html", form=form, title="Nuevo hotel", submit_label="Crear hotel", action_url=url_for("admin_new_hotel"))
+
+    @app.route("/admin/content/hotel/<int:item_id>/edit", methods=["GET", "POST"])
+    @login_required
+    def admin_edit_hotel(item_id):
+        if not current_user.is_admin:
+            flash("No tienes permisos de administrador.", "danger")
+            return redirect(url_for("index"))
+        item = Hotel.query.get_or_404(item_id)
+        form = HotelForm(obj=item)
+        if form.validate_on_submit():
+            item.name = form.name.data.strip()
+            item.description = form.description.data.strip()
+            item.city = form.city.data.strip()
+            item.address = (form.address.data or "").strip()
+            item.phone = (form.phone.data or "").strip()
+            item.website = (form.website.data or "").strip()
+            item.price_level = form.price_level.data
+            item.stars = form.stars.data or 3
+            item.latitude = form.latitude.data
+            item.longitude = form.longitude.data
+            if getattr(form.image.data, "filename", ""):
+                item.image = save_upload_image(form.image.data, folder="hotels")
+            db.session.commit()
+            log_activity(current_user.id, "hotel_updated", f"Hotel actualizado: {item.name}")
+            flash("Hotel actualizado correctamente.", "success")
+            return redirect(url_for("admin_content"))
+        return render_template("admin/content_form.html", form=form, title="Editar hotel", submit_label="Guardar cambios", action_url=url_for("admin_edit_hotel", item_id=item.id))
 
     @app.route("/admin/reviews")
     @login_required
@@ -727,9 +886,10 @@ def create_app(config_name: str = "default"):
 
 def seed_data():
     if User.query.filter_by(email="admin@holaguinea.com").first() is None:
+        admin_username = "admin" if User.query.filter_by(username="admin").first() is None else "admin-holaguinea"
         admin = User(
             email="admin@holaguinea.com",
-            username="admin",
+            username=admin_username,
             full_name="Administrador HOLA GUINEA",
             role="admin",
             is_active=True,
