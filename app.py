@@ -1,4 +1,6 @@
 import os
+import re
+import unicodedata
 from datetime import datetime
 
 from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify
@@ -40,6 +42,11 @@ def log_activity(user_id, action, details=""):
     activity = ActivityLog(user_id=user_id, action=action, details=details)
     db.session.add(activity)
     db.session.commit()
+
+
+def dish_slug(name):
+    normalized = unicodedata.normalize("NFKD", name).encode("ascii", "ignore").decode("ascii")
+    return re.sub(r"[^a-z0-9]+", "-", normalized.lower()).strip("-") or "plato"
 
 
 def send_push_notification(target_scope="all", title="HOLA GUINEA", body="Nueva actualización disponible.", target_user_id=None):
@@ -122,7 +129,7 @@ def create_app(config_name: str = "default"):
             base_url = app.config.get("PUBLIC_BASE_URL")
             return f"{base_url}{path}" if base_url else url_for(endpoint, _external=True, **values)
 
-        return {"public_url": public_url}
+        return {"public_url": public_url, "dish_slug": dish_slug}
 
     @app.route("/set-language/<lang>")
     def set_language(lang):
@@ -314,6 +321,10 @@ def create_app(config_name: str = "default"):
         if current_user.is_authenticated:
             is_favorite = Favorite.query.filter_by(user_id=current_user.id, content_type="food", content_id=item_id).first() is not None
         return render_template("food/detail.html", item=item, reviews=reviews, form=form, is_favorite=is_favorite)
+
+    @app.route("/plato/<int:item_id>-<slug>")
+    def shared_food_detail(item_id, slug):
+        return redirect(url_for("food_detail", item_id=item_id), code=301)
 
     @app.route("/restaurants")
     def restaurants():
