@@ -25,7 +25,7 @@ def save_upload_image(file: Optional[FileStorage], folder: str = "uploads", max_
     if not file or not valid_image(file):
         raise ValueError("Archivo no válido o formato no permitido.")
 
-    upload_dir = ensure_upload_dir(os.path.join(os.getcwd(), "static"), folder)
+    upload_dir = ensure_upload_dir(os.path.join(os.getcwd(), "static", "uploads"), folder)
     filename = Path(file.filename).name
     stem = Path(filename).stem
     ext = Path(filename).suffix.lower()
