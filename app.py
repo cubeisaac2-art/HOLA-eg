@@ -726,7 +726,7 @@ def create_app(config_name: str = "default"):
 
 
 def seed_data():
-    if User.query.count() == 0:
+    if User.query.filter_by(email="admin@holaguinea.com").first() is None:
         admin = User(
             email="admin@holaguinea.com",
             username="admin",
