@@ -145,6 +145,28 @@ def create_app(config_name: str = "default"):
     def about():
         return render_template("about.html")
 
+    @app.route("/travel-guides")
+    def travel_guides():
+        packages = [
+            ("Vistazo a la isla de Bioko", "4 días", "https://rumbomalabo.com/vistazo-a-la-isla-de-bioko-2/"),
+            ("Explorador de Bioko", "5 días", "https://rumbomalabo.com/explorador-de-bioko/"),
+            ("La joya de Bioko", "7 días", "https://rumbomalabo.com/la-joya-de-bioko/"),
+            ("Los secretos de Bioko", "9 días", "https://rumbomalabo.com/los-secretos-de-bioko/"),
+            ("La belleza de Guinea Ecuatorial", "10 días", "https://rumbomalabo.com/la-belleza-de-guinea-ecuatorial/"),
+            ("Islas de Guinea Ecuatorial", "12 días", "https://rumbomalabo.com/islas-de-guinea-ecuatorial/"),
+        ]
+        excursions = [
+            ("Excursión a Ureka", "1 o 2 días", "https://rumbomalabo.com/tour-a-ureka/"),
+            ("Visita al Lago Biao", "1 día", "https://rumbomalabo.com/visita-al-lago-biao/"),
+            ("Pico Basilé", "Medio día", "https://rumbomalabo.com/excursion-al-pico-basile/"),
+            ("Cascadas Ilachi", "1 día", "https://rumbomalabo.com/visita-a-cascadas-iladyi/"),
+            ("Tour por la Isla de Bioko", "1 día", "https://rumbomalabo.com/tour-isla-bioko/"),
+            ("Excursión a Corisco", "3 días", "https://rumbomalabo.com/viaje-corisco/"),
+            ("Cascadas de Bilelipa", "1 día", "https://rumbomalabo.com/cascadas-bilelipa-guinea-ecuatorial/"),
+            ("Tour a Monte Alen", "2 días", "https://rumbomalabo.com/monte-alen/"),
+        ]
+        return render_template("travel_guides.html", packages=packages, excursions=excursions)
+
     @app.route("/privacy")
     def privacy():
         return render_template("privacy.html")
