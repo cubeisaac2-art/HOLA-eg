@@ -474,6 +474,25 @@ def create_app(config_name: str = "default"):
         db.session.commit()
         return jsonify({"status": "ok", "active": user.is_active})
 
+    @app.route("/admin/users/<int:user_id>/delete", methods=["POST"])
+    @login_required
+    def delete_user(user_id):
+        if not current_user.is_admin:
+            return jsonify({"status": "forbidden"}), 403
+        if current_user.id == user_id:
+            flash("No puedes eliminar tu propia cuenta de administrador.", "warning")
+            return redirect(url_for("admin_users"))
+
+        user = User.query.get_or_404(user_id)
+        if user.is_admin and User.query.filter_by(role="admin", is_active=True).count() <= 1:
+            flash("Debe quedar al menos un administrador activo.", "warning")
+            return redirect(url_for("admin_users"))
+
+        db.session.delete(user)
+        db.session.commit()
+        flash("Usuario eliminado correctamente.", "success")
+        return redirect(url_for("admin_users"))
+
     @app.route("/admin/content")
     @login_required
     def admin_content():

@@ -28,11 +28,20 @@
                         {% endif %}
                     </td>
                     <td>
-                        <form action="{{ url_for('toggle_user_status', user_id=user.id) }}" method="post">
-                            <button class="btn btn-sm btn-outline-primary" type="submit">
-                                {% if user.is_active %}Desactivar{% else %}Activar{% endif %}
-                            </button>
-                        </form>
+                        <div class="d-flex flex-wrap gap-2">
+                            <form action="{{ url_for('toggle_user_status', user_id=user.id) }}" method="post">
+                                <button class="btn btn-sm btn-outline-primary" type="submit">
+                                    {% if user.is_active %}Desactivar{% else %}Activar{% endif %}
+                                </button>
+                            </form>
+                            {% if user.id != current_user.id %}
+                                <form action="{{ url_for('delete_user', user_id=user.id) }}" method="post" onsubmit="return confirm('¿Eliminar este usuario y sus datos asociados?');">
+                                    <button class="btn btn-sm btn-outline-danger" type="submit">Eliminar</button>
+                                </form>
+                            {% else %}
+                                <span class="small text-muted align-self-center">Tu cuenta</span>
+                            {% endif %}
+                        </div>
                     </td>
                 </tr>
                 {% endfor %}
