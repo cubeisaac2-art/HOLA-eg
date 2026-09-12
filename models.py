@@ -40,6 +40,10 @@ class User(db.Model, UserMixin):
         return self.role == "admin"
 
     @property
+    def can_manage_dictionary(self):
+        return self.role in {"admin", "editor"}
+
+    @property
     def password(self):
         raise AttributeError("Password is not a readable attribute.")
 
@@ -99,6 +103,8 @@ class FoodItem(db.Model):
     city = db.Column(db.String(80), nullable=False)
     price_level = db.Column(db.String(20), default="moderado")
     category = db.Column(db.String(40), default="local")
+    recipe = db.Column(db.Text, default="")
+    video_url = db.Column(db.String(500), default="")
     image = db.Column(db.String(255), default="default-food.svg")
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
@@ -122,6 +128,8 @@ class FoodItem(db.Model):
             "city": self.city,
             "price_level": self.price_level,
             "category": self.category,
+            "recipe": self.recipe,
+            "video_url": self.video_url,
             "image": self.image,
             "average_rating": self.average_rating,
             "review_count": self.review_count,

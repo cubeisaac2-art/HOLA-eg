@@ -19,6 +19,11 @@
 
                         <div class="col-12">{{ form.description.label(class_='form-label') }}{{ form.description(class_='form-control', rows=4) }}</div>
 
+                        {% if form.recipe is defined %}
+                        <div class="col-12">{{ form.recipe.label(class_='form-label') }}{{ form.recipe(class_='form-control', rows=6, placeholder='Ingredientes y pasos de preparación') }}</div>
+                        <div class="col-12">{{ form.video_url.label(class_='form-label') }}{{ form.video_url(class_='form-control', placeholder='https://www.youtube.com/watch?v=...') }}</div>
+                        {% endif %}
+
                         {% if form.address is defined %}
                         <div class="col-md-6">{{ form.address.label(class_='form-label') }}{{ form.address(class_='form-control') }}</div>
                         <div class="col-md-6">{{ form.phone.label(class_='form-label') }}{{ form.phone(class_='form-control') }}</div>

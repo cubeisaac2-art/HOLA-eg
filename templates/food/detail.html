@@ -10,7 +10,9 @@
             <h1>{{ item.name }}</h1>
             <p class="text-muted">{{ item.city }} · {{ item.category }}</p>
             <p>{{ item.description }}</p>
+            {% if item.recipe %}<div class="mt-4"><h2 class="h4">Receta</h2><p class="white-space-pre-line">{{ item.recipe }}</p></div>{% endif %}
             <div class="d-flex gap-2 flex-wrap">
+                {% if item.video_url %}<a class="btn btn-outline-danger" href="{{ item.video_url }}" target="_blank" rel="noopener"><i class="bi bi-play-circle me-1"></i>Ver preparación</a>{% endif %}
                 <button class="btn btn-outline-primary favorite-toggle" data-content-type="food" data-content-id="{{ item.id }}">{% if is_favorite %}Quitar favorito{% else %}Añadir favorito{% endif %}</button>
                 <a class="btn btn-primary" href="{{ url_for('food_list') }}">Volver</a>
             </div>

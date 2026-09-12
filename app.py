@@ -5,6 +5,7 @@ from flask import Flask, render_template, request, redirect, url_for, flash, ses
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from pywebpush import webpush
 from werkzeug.security import generate_password_hash
+from sqlalchemy import inspect, text
 
 from config import config
 from forms import (
@@ -17,6 +18,7 @@ from forms import (
     HotelForm,
     PlaceRecommendationForm,
     NewsForm,
+    RoleForm,
     ReviewForm,
     NotificationForm,
 )
@@ -82,6 +84,15 @@ def send_push_notification(target_scope="all", title="HOLA GUINEA", body="Nueva 
     return True
 
 
+def ensure_schema_columns():
+    existing_columns = {column["name"] for column in inspect(db.engine).get_columns("food_items")}
+    if "recipe" not in existing_columns:
+        db.session.execute(text("ALTER TABLE food_items ADD COLUMN recipe TEXT DEFAULT ''"))
+    if "video_url" not in existing_columns:
+        db.session.execute(text("ALTER TABLE food_items ADD COLUMN video_url VARCHAR(500) DEFAULT ''"))
+    db.session.commit()
+
+
 app = None
 
 
@@ -101,6 +112,7 @@ def create_app(config_name: str = "default"):
 
     with app.app_context():
         db.create_all()
+        ensure_schema_columns()
         seed_data()
 
     @app.route("/set-language/<lang>")
@@ -250,6 +262,9 @@ def create_app(config_name: str = "default"):
     @app.route("/dictionary/new", methods=["GET", "POST"])
     @login_required
     def new_dictionary_entry():
+        if not current_user.can_manage_dictionary:
+            flash("No tienes permisos para gestionar el diccionario.", "danger")
+            return redirect(url_for("dictionary"))
         form = DictionaryForm()
         if form.validate_on_submit():
             entry = DictionaryEntry(
@@ -464,11 +479,26 @@ def create_app(config_name: str = "default"):
         users = User.query.order_by(User.created_at.desc()).all()
         return render_template("admin/users.html", users=users)
 
+    @app.route("/admin/users/<int:user_id>/role", methods=["POST"])
+    @login_required
+    def update_user_role(user_id):
+        if not current_user.is_admin:
+            return jsonify({"status": "forbidden"}), 403
+        user = User.query.get_or_404(user_id)
+        form = RoleForm()
+        if form.validate_on_submit():
+            user.role = form.role.data
+            db.session.commit()
+            flash("Rol actualizado correctamente.", "success")
+        else:
+            flash("El rol seleccionado no es válido.", "danger")
+        return redirect(url_for("admin_users"))
+
     @app.route("/admin/dictionary")
     @login_required
     def admin_dictionary():
-        if not current_user.is_admin:
-            flash("No tienes permisos de administrador.", "danger")
+        if not current_user.can_manage_dictionary:
+            flash("No tienes permisos para gestionar el diccionario.", "danger")
             return redirect(url_for("index"))
         entries = DictionaryEntry.query.order_by(DictionaryEntry.term).all()
         return render_template("admin/dictionary.html", entries=entries)
@@ -476,8 +506,8 @@ def create_app(config_name: str = "default"):
     @app.route("/admin/dictionary/new", methods=["GET", "POST"])
     @login_required
     def admin_new_dictionary_entry():
-        if not current_user.is_admin:
-            flash("No tienes permisos de administrador.", "danger")
+        if not current_user.can_manage_dictionary:
+            flash("No tienes permisos para gestionar el diccionario.", "danger")
             return redirect(url_for("index"))
         form = DictionaryForm()
         if form.validate_on_submit():
@@ -498,8 +528,8 @@ def create_app(config_name: str = "default"):
     @app.route("/admin/dictionary/<int:entry_id>/edit", methods=["GET", "POST"])
     @login_required
     def admin_edit_dictionary_entry(entry_id):
-        if not current_user.is_admin:
-            flash("No tienes permisos de administrador.", "danger")
+        if not current_user.can_manage_dictionary:
+            flash("No tienes permisos para gestionar el diccionario.", "danger")
             return redirect(url_for("index"))
         entry = DictionaryEntry.query.get_or_404(entry_id)
         form = DictionaryForm(obj=entry)
@@ -517,7 +547,7 @@ def create_app(config_name: str = "default"):
     @app.route("/admin/dictionary/<int:entry_id>/delete", methods=["POST"])
     @login_required
     def admin_delete_dictionary_entry(entry_id):
-        if not current_user.is_admin:
+        if not current_user.can_manage_dictionary:
             return jsonify({"status": "forbidden"}), 403
         entry = DictionaryEntry.query.get_or_404(entry_id)
         db.session.delete(entry)
@@ -646,6 +676,8 @@ def create_app(config_name: str = "default"):
                 city=form.city.data.strip(),
                 price_level=form.price_level.data,
                 category=form.category.data,
+                recipe=(form.recipe.data or "").strip(),
+                video_url=(form.video_url.data or "").strip(),
                 image=image_path,
             )
             db.session.add(item)
@@ -670,6 +702,8 @@ def create_app(config_name: str = "default"):
             item.city = form.city.data.strip()
             item.price_level = form.price_level.data
             item.category = form.category.data
+            item.recipe = (form.recipe.data or "").strip()
+            item.video_url = (form.video_url.data or "").strip()
             if getattr(form.image.data, "filename", ""):
                 item.image = save_upload_image(form.image.data, folder="food")
             db.session.commit()

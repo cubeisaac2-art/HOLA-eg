@@ -19,7 +19,16 @@
                 <tr>
                     <td>{{ user.full_name }}</td>
                     <td>{{ user.email }}</td>
-                    <td>{{ user.role }}</td>
+                    <td>
+                        <form action="{{ url_for('update_user_role', user_id=user.id) }}" method="post" class="d-flex gap-2">
+                            <select class="form-select form-select-sm" name="role" aria-label="Rol de {{ user.email }}" {% if user.id == current_user.id %}disabled{% endif %}>
+                                <option value="user" {% if user.role == 'user' %}selected{% endif %}>Usuario</option>
+                                <option value="editor" {% if user.role == 'editor' %}selected{% endif %}>Editor diccionario</option>
+                                <option value="admin" {% if user.role == 'admin' %}selected{% endif %}>Administrador</option>
+                            </select>
+                            {% if user.id != current_user.id %}<button class="btn btn-sm btn-outline-secondary" type="submit">Guardar</button>{% endif %}
+                        </form>
+                    </td>
                     <td>
                         {% if user.is_active %}
                             <span class="badge text-bg-success">Activo</span>

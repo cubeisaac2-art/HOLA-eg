@@ -1,7 +1,7 @@
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileAllowed, FileField
 from wtforms import BooleanField, FileField as WtFormsFileField, FloatField, IntegerField, PasswordField, SelectField, StringField, SubmitField, TextAreaField
-from wtforms.validators import DataRequired, Email, Length, NumberRange, Optional
+from wtforms.validators import DataRequired, Email, Length, NumberRange, Optional, URL
 
 
 class LoginForm(FlaskForm):
@@ -29,7 +29,7 @@ class ProfileForm(FlaskForm):
 class DictionaryForm(FlaskForm):
     term = StringField("Término", validators=[DataRequired(), Length(min=1, max=120)])
     translation = StringField("Traducción", validators=[DataRequired(), Length(min=1, max=180)])
-    language = SelectField("Lengua", choices=[("fang", "Fang"), ("bubi", "Bubi"), ("ndowe", "Ndowe"), ("annobonense", "Annobonense"), ("kombe", "Kombe"), ("benga", "Benga"), ("baseke", "Baseke"), ("fang-ntumu", "Fang-Ntumu"), ("otra", "Otra")], validators=[DataRequired()])
+    language = SelectField("Lengua", choices=[("fang", "Fang"), ("pidgi", "Pidgi (Bubi)"), ("fadhambo", "Fadhambo (Annobones)"), ("combe", "Combe (Ndowe)"), ("bisio", "Bisio")], validators=[DataRequired()])
     category = SelectField("Categoría", choices=[("general", "General"), ("saludo", "Saludo"), ("comida", "Comida"), ("naturaleza", "Naturaleza"), ("cultura", "Cultura")], default="general")
     notes = TextAreaField("Notas", validators=[Optional(), Length(max=500)])
     submit = SubmitField("Guardar")
@@ -41,6 +41,8 @@ class FoodForm(FlaskForm):
     city = StringField("Ciudad", validators=[DataRequired(), Length(min=2, max=80)])
     price_level = SelectField("Precio", choices=[("bajo", "Bajo"), ("medio", "Medio"), ("alto", "Alto")], default="medio")
     category = SelectField("Tipo", choices=[("local", "Local"), ("marino", "Marino"), ("vegetariano", "Vegetariano"), ("postre", "Postre")], default="local")
+    recipe = TextAreaField("Receta", validators=[Optional(), Length(max=5000)])
+    video_url = StringField("Enlace del vídeo", validators=[Optional(), URL(require_tld=False), Length(max=500)])
     image = FileField("Imagen", validators=[FileAllowed(["jpg", "jpeg", "png", "webp"], "Solo imágenes JPG, PNG o WEBP.")])
     submit = SubmitField("Guardar")
 
@@ -73,6 +75,11 @@ class HotelForm(FlaskForm):
     longitude = FloatField("Longitud", validators=[DataRequired()])
     image = FileField("Imagen", validators=[FileAllowed(["jpg", "jpeg", "png", "webp"], "Solo imágenes JPG, PNG o WEBP.")])
     submit = SubmitField("Guardar")
+
+
+class RoleForm(FlaskForm):
+    role = SelectField("Rol", choices=[("user", "Usuario"), ("editor", "Editor del diccionario"), ("admin", "Administrador")], validators=[DataRequired()])
+    submit = SubmitField("Guardar rol")
 
 
 class PlaceRecommendationForm(FlaskForm):
