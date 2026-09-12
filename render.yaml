@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: hola-guinea
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn "app:create_app()"
+    envVars:
+      - key: SECRET_KEY
+        generateValue: true
+      - key: EMBASSY_VISA_URL
+        value: https://www.guineaecuatorialembassy.com/
