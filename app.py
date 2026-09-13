@@ -164,6 +164,7 @@ def create_app(config_name: str = "default"):
         db.create_all()
         ensure_schema_columns()
         seed_data()
+        import_ahoraeg_news()
         import_bundled_fang_dictionary()
 
     @app.context_processor
@@ -1085,6 +1086,59 @@ def create_app(config_name: str = "default"):
         return render_template("404.html"), 404
 
     return app
+
+
+def import_ahoraeg_news():
+    articles = [
+        {
+            "title": "Canal Sol entrega material escolar a sus abonados en Malabo y Bata",
+            "summary": "La empresa distribuyó kits escolares en Malabo y Bata dentro de la promoción La Vuelta al Cole viene con Premio, como apoyo a las familias ante el inicio del curso.",
+            "body": "Canal Sol realizó una entrega simultánea de material escolar a sus abonados en Malabo y Bata. La iniciativa busca apoyar a las familias ecuatoguineanas durante el comienzo del nuevo curso académico.",
+            "category": "economia",
+            "source_url": "https://ahoraeg.com/economia/2026/09/12/canal-sol-entrega-material-escolar-a-sus-abonados-en-malabo-y-bata/",
+            "published_at": datetime(2026, 9, 12),
+        },
+        {
+            "title": "Culminan las pruebas de acceso al Programa Nacional de Becas y BANGE Business School",
+            "summary": "Las evaluaciones reunieron a 86 jóvenes en Malabo y Bata para optar a 60 becas de formación profesional en áreas estratégicas.",
+            "body": "La fase semifinal del programa de becas concluyó tras dos jornadas de pruebas en las sedes de BANGE Business School. El comité evaluará los resultados antes de publicar la lista definitiva de beneficiarios.",
+            "category": "economia",
+            "source_url": "https://ahoraeg.com/economia/2026/09/12/culminan-con-exito-las-pruebas-de-acceso-al-programa-nacional-de-becas-del-ministerio-de-hidrocarburos-minas-y-electricidad-y-bange-business-school/",
+            "published_at": datetime(2026, 9, 12),
+        },
+        {
+            "title": "Rosendo Machimbo Pérez se incorpora a la Dirección General de Estrategia Económica",
+            "summary": "El nuevo director general aporta más de quince años de experiencia, formación internacional y dominio de tres idiomas para apoyar la diversificación económica.",
+            "body": "Rosendo Machimbo Pérez ha sido nombrado Director General de Estrategia Económica y Diversificación Productiva. Su trayectoria combina experiencia empresarial, formación económica y trabajo en planificación estratégica.",
+            "category": "politica",
+            "source_url": "https://ahoraeg.com/politica/2026/09/12/rosendo-machimbo-perez-experiencia-tecnica-al-frente-de-la-direccion-general-de-estrategia-economica-y-la-diversificacion-productiva/",
+            "published_at": datetime(2026, 9, 12),
+        },
+        {
+            "title": "El 15 de Agosto vence 4-0 al Fomboni en la preliminar de la Champions CAF",
+            "summary": "El conjunto de Akonibe comenzó con una amplia victoria su eliminatoria continental ante el Fomboni FC de Comoras en Yaundé.",
+            "body": "El 15 de Agosto de Akonibe se impuso por 4-0 al Fomboni FC en el partido de ida de la primera fase preliminar de la Liga de Campeones de la CAF 2026/2027. El equipo ecuatoguineano deberá cerrar la eliminatoria en el encuentro de vuelta.",
+            "category": "deporte",
+            "source_url": "https://ahoraeg.com/deportes/2026/09/12/preliminares-de-la-champions-caf-15-de-agosto-muestra-su-poderio-ofensivo-y-se-impone-por-4-0-contra-fomboni/",
+            "published_at": datetime(2026, 9, 12),
+        },
+        {
+            "title": "Sanidad inicia la distribución progresiva de medicamentos antirretrovirales",
+            "summary": "El Programa Nacional de VIH informó de la recepción de medicamentos tras retrasos logísticos y pidió a los pacientes no modificar su tratamiento por cuenta propia.",
+            "body": "El Ministerio de Sanidad e Infraestructuras Sanitarias comunicó el inicio de la recepción y distribución progresiva de antirretrovirales. Las autoridades recomiendan acudir al centro sanitario ante cualquier dificultad con la medicación.",
+            "category": "salud",
+            "source_url": "https://ahoraeg.com/sociedad/2026/09/11/llegan-los-antirretrovirales-para-las-personas-con-el-vih-y-sanidad-comienza-su-distribucion/",
+            "published_at": datetime(2026, 9, 11),
+        },
+    ]
+    for article_data in articles:
+        article = NewsArticle.query.filter_by(source_url=article_data["source_url"]).first()
+        if article is None:
+            db.session.add(NewsArticle(image="default-news.svg", is_published=True, **article_data))
+        else:
+            for key, value in article_data.items():
+                setattr(article, key, value)
+    db.session.commit()
 
 
 def seed_data():

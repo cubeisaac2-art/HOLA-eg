@@ -106,7 +106,7 @@ class NewsForm(FlaskForm):
     title = StringField("Título", validators=[DataRequired(), Length(min=5, max=180)])
     summary = StringField("Resumen", validators=[DataRequired(), Length(min=10, max=300)])
     body = TextAreaField("Contenido", validators=[DataRequired(), Length(min=20, max=5000)])
-    category = SelectField("Categoría", choices=[("actualidad", "Actualidad"), ("historia", "Historia"), ("deporte", "Deporte"), ("cultura", "Cultura")], default="actualidad")
+    category = SelectField("Categoría", choices=[("actualidad", "Actualidad"), ("politica", "Política"), ("economia", "Economía"), ("sociedad", "Sociedad"), ("salud", "Salud"), ("historia", "Historia"), ("deporte", "Deporte"), ("cultura", "Cultura")], default="actualidad")
     source_url = StringField("Enlace de fuente", validators=[Optional(), Length(max=500)])
     image = FileField("Imagen", validators=[FileAllowed(["jpg", "jpeg", "png", "webp"], "Solo imágenes JPG, PNG o WEBP.")])
     submit = SubmitField("Publicar noticia")

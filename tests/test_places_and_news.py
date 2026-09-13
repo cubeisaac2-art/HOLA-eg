@@ -1,5 +1,5 @@
 from app import create_app
-from models import db, User, PlaceRecommendation
+from models import db, User, PlaceRecommendation, NewsArticle
 
 
 def test_news_categories_and_visa_link():
@@ -11,6 +11,12 @@ def test_news_categories_and_visa_link():
         body = response.get_data(as_text=True)
         assert 'Agenda deportiva local' in body
         assert 'Memoria viva de Malabo' not in body
+
+        economy_response = client.get('/news?category=economia')
+        economy_body = economy_response.get_data(as_text=True)
+        assert economy_response.status_code == 200
+        assert 'Canal Sol entrega material escolar' in economy_body
+        assert 'ahoraeg.com' in economy_body
 
         visa_response = client.get('/visa')
         assert visa_response.status_code == 302
@@ -71,3 +77,10 @@ def test_only_approved_places_are_public():
         assert response.status_code == 200
         assert 'Lugar publicado' in body
         assert 'Lugar pendiente' not in body
+
+
+def test_ahoraeg_news_are_seeded_without_duplicates():
+    app = create_app()
+    with app.app_context():
+        source_url = 'https://ahoraeg.com/economia/2026/09/12/canal-sol-entrega-material-escolar-a-sus-abonados-en-malabo-y-bata/'
+        assert NewsArticle.query.filter_by(source_url=source_url).count() == 1
