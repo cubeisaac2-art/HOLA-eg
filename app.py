@@ -130,7 +130,7 @@ def ensure_schema_columns():
             ("business_name", "VARCHAR(150) DEFAULT ''"),
             ("subscription_plan", "VARCHAR(20) DEFAULT 'basic' NOT NULL"),
             ("subscription_status", "VARCHAR(20) DEFAULT 'none' NOT NULL"),
-            ("subscription_expires_at", "DATETIME"),
+            ("subscription_expires_at", "TIMESTAMP"),
         ],
         "restaurants": [("owner_id", "INTEGER")],
         "hotels": [("owner_id", "INTEGER")],
