@@ -18,6 +18,10 @@ class User(db.Model, UserMixin):
     full_name = db.Column(db.String(150), nullable=False)
     password_hash = db.Column(db.String(255), nullable=False)
     role = db.Column(db.String(20), default="user", nullable=False)
+    business_name = db.Column(db.String(150), default="")
+    subscription_plan = db.Column(db.String(20), default="basic", nullable=False)
+    subscription_status = db.Column(db.String(20), default="none", nullable=False)
+    subscription_expires_at = db.Column(db.DateTime, nullable=True)
     is_active = db.Column(db.Boolean, default=True, nullable=False)
     profile_image = db.Column(db.String(255), default="default-avatar.svg")
     bio = db.Column(db.Text, default="")
@@ -42,6 +46,14 @@ class User(db.Model, UserMixin):
     @property
     def can_manage_dictionary(self):
         return self.role in {"admin", "editor"}
+
+    @property
+    def is_business(self):
+        return self.role == "business"
+
+    @property
+    def content_limit(self):
+        return None if self.subscription_plan == "pro" else 3
 
     @property
     def password(self):
@@ -151,6 +163,7 @@ class Restaurant(db.Model):
     latitude = db.Column(db.Float, nullable=False)
     longitude = db.Column(db.Float, nullable=False)
     image = db.Column(db.String(255), default="default-restaurant.svg")
+    owner_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=True, index=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
@@ -199,6 +212,7 @@ class Hotel(db.Model):
     latitude = db.Column(db.Float, nullable=False)
     longitude = db.Column(db.Float, nullable=False)
     image = db.Column(db.String(255), default="default-hotel.svg")
+    owner_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=True, index=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 

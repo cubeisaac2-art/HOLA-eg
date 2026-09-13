@@ -10,6 +10,7 @@
                     <th>Nombre</th>
                     <th>Email</th>
                     <th>Rol</th>
+                    <th>Suscripción</th>
                     <th>Estado</th>
                     <th>Acción</th>
                 </tr>
@@ -21,6 +22,7 @@
                     <td>{{ user.email }}</td>
                     <td>
                         <form action="{{ url_for('update_user_role', user_id=user.id) }}" method="post" class="d-flex gap-2">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                             <select class="form-select form-select-sm" name="role" aria-label="Rol de {{ user.email }}" {% if user.id == current_user.id %}disabled{% endif %}>
                                 <option value="user" {% if user.role == 'user' %}selected{% endif %}>Usuario</option>
                                 <option value="editor" {% if user.role == 'editor' %}selected{% endif %}>Editor diccionario</option>
@@ -28,6 +30,16 @@
                             </select>
                             {% if user.id != current_user.id %}<button class="btn btn-sm btn-outline-secondary" type="submit">Guardar</button>{% endif %}
                         </form>
+                    </td>
+                    <td>
+                        {% if user.is_business %}
+                            <div class="small">{{ user.business_name or 'Sin nombre' }}<br>{{ '500 FCFA' if user.subscription_plan == 'pro' else '250 FCFA' }} · {{ user.subscription_status }}</div>
+                            <form action="{{ url_for('update_user_subscription', user_id=user.id) }}" method="post" class="d-flex gap-1 mt-1">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <input type="hidden" name="action" value="activate">
+                                <button class="btn btn-sm btn-outline-success" type="submit">Activar 30 días</button>
+                            </form>
+                        {% else %}-{% endif %}
                     </td>
                     <td>
                         {% if user.is_active %}
@@ -39,12 +51,14 @@
                     <td>
                         <div class="d-flex flex-wrap gap-2">
                             <form action="{{ url_for('toggle_user_status', user_id=user.id) }}" method="post">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                 <button class="btn btn-sm btn-outline-primary" type="submit">
                                     {% if user.is_active %}Desactivar{% else %}Activar{% endif %}
                                 </button>
                             </form>
                             {% if user.id != current_user.id %}
                                 <form action="{{ url_for('delete_user', user_id=user.id) }}" method="post" onsubmit="return confirm('¿Eliminar este usuario y sus datos asociados?');">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                     <button class="btn btn-sm btn-outline-danger" type="submit">Eliminar</button>
                                 </form>
                             {% else %}

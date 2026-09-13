@@ -24,10 +24,27 @@
                         {{ form.password.label(class_='form-label') }}
                         {{ form.password(class_='form-control') }}
                     </div>
+                    <div class="mb-3">
+                        {{ form.account_type.label(class_='form-label') }}
+                        {{ form.account_type(class_='form-select', id='accountType') }}
+                    </div>
+                    <div id="businessFields" class="border rounded p-3 mb-3">
+                        <div class="mb-3">{{ form.business_name.label(class_='form-label') }}{{ form.business_name(class_='form-control', placeholder='Nombre comercial') }}</div>
+                        <div>{{ form.subscription_plan.label(class_='form-label') }}{{ form.subscription_plan(class_='form-select') }}</div>
+                    </div>
                     {{ form.submit(class_='btn btn-primary w-100') }}
                 </form>
             </div>
         </div>
     </div>
 </section>
+{% block scripts %}
+<script>
+    const accountType = document.getElementById('accountType');
+    const businessFields = document.getElementById('businessFields');
+    const updateBusinessFields = () => { businessFields.hidden = accountType.value !== 'business'; };
+    accountType.addEventListener('change', updateBusinessFields);
+    updateBusinessFields();
+</script>
+{% endblock %}
 {% endblock %}

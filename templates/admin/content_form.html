@@ -13,6 +13,17 @@
                 <form method="post" enctype="multipart/form-data">
                     {{ form.hidden_tag() }}
 
+                    {% if form.errors %}
+                    <div class="alert alert-danger">
+                        <strong>No se pudo guardar.</strong> Revisa los campos marcados.
+                        <ul class="mb-0 mt-2">
+                            {% for field_errors in form.errors.values() %}
+                                {% for error in field_errors %}<li>{{ error }}</li>{% endfor %}
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    {% endif %}
+
                     <div class="row g-3">
                         <div class="col-md-6">{{ form.name.label(class_='form-label') }}{{ form.name(class_='form-control') }}</div>
                         <div class="col-md-6">{{ form.city.label(class_='form-label') }}{{ form.city(class_='form-control') }}</div>

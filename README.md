@@ -21,6 +21,15 @@ Abre `http://127.0.0.1:5000`.
 4. Desde allí puedes crear comidas, restaurantes, hoteles y noticias.
 5. Las recomendaciones enviadas por usuarios aparecen como `pending`; pulsa **Aprobar** para publicarlas en `/places`.
 
+## Cuentas de negocio y suscripciones
+
+Los restaurantes y hoteles pueden registrarse como cuenta de **Negocio** desde `/register`. Después de elegir un plan, el administrador confirma el pago desde `/admin/users`:
+
+- **250 FCFA/mes:** hasta 3 publicaciones entre restaurantes y hoteles.
+- **500 FCFA/mes:** publicaciones ilimitadas.
+
+La activación dura 30 días y el negocio administra únicamente sus propios contenidos desde `/business`. El proyecto deja el estado de la suscripción en `pending` hasta que se confirme el pago; para cobrar automáticamente hay que conectar una pasarela de pagos compatible con Guinea Ecuatorial.
+
 En producción debes cambiar la cuenta inicial, definir `SECRET_KEY` y no reutilizar la contraseña de desarrollo.
 
 ## Secciones principales

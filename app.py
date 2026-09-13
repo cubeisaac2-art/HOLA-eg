@@ -2,7 +2,7 @@ import os
 import re
 import unicodedata
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
@@ -22,6 +22,7 @@ from forms import (
     PlaceRecommendationForm,
     NewsForm,
     RoleForm,
+    SubscriptionForm,
     ReviewForm,
     NotificationForm,
 )
@@ -119,11 +120,26 @@ def send_push_notification(target_scope="all", title="HOLA GUINEA", body="Nueva 
 
 
 def ensure_schema_columns():
-    existing_columns = {column["name"] for column in inspect(db.engine).get_columns("food_items")}
-    if "recipe" not in existing_columns:
+    food_columns = {column["name"] for column in inspect(db.engine).get_columns("food_items")}
+    if "recipe" not in food_columns:
         db.session.execute(text("ALTER TABLE food_items ADD COLUMN recipe TEXT DEFAULT ''"))
-    if "video_url" not in existing_columns:
+    if "video_url" not in food_columns:
         db.session.execute(text("ALTER TABLE food_items ADD COLUMN video_url VARCHAR(500) DEFAULT ''"))
+    migrations = {
+        "users": [
+            ("business_name", "VARCHAR(150) DEFAULT ''"),
+            ("subscription_plan", "VARCHAR(20) DEFAULT 'basic' NOT NULL"),
+            ("subscription_status", "VARCHAR(20) DEFAULT 'none' NOT NULL"),
+            ("subscription_expires_at", "DATETIME"),
+        ],
+        "restaurants": [("owner_id", "INTEGER")],
+        "hotels": [("owner_id", "INTEGER")],
+    }
+    for table, columns in migrations.items():
+        existing_columns = {column["name"] for column in inspect(db.engine).get_columns(table)}
+        for column_name, definition in columns:
+            if column_name not in existing_columns:
+                db.session.execute(text(f"ALTER TABLE {table} ADD COLUMN {column_name} {definition}"))
     db.session.commit()
 
 
@@ -152,12 +168,18 @@ def create_app(config_name: str = "default"):
 
     @app.context_processor
     def share_helpers():
+        def media_url(image, upload_folder="uploads"):
+            image = image or ""
+            if image.startswith("imgns/"):
+                return url_for("static", filename=image)
+            return url_for("static", filename=f"{upload_folder}/{image}")
+
         def public_url(endpoint, **values):
             path = url_for(endpoint, **values)
             base_url = app.config.get("PUBLIC_BASE_URL")
             return f"{base_url}{path}" if base_url else url_for(endpoint, _external=True, **values)
 
-        return {"public_url": public_url, "dish_slug": dish_slug}
+        return {"public_url": public_url, "dish_slug": dish_slug, "media_url": media_url}
 
     @app.route("/set-language/<lang>")
     def set_language(lang):
@@ -264,13 +286,19 @@ def create_app(config_name: str = "default"):
                 email=form.email.data.lower(),
                 username=form.username.data.strip(),
                 full_name=form.full_name.data.strip(),
-                role="user",
+                role=form.account_type.data,
+                business_name=(form.business_name.data or "").strip(),
+                subscription_plan=form.subscription_plan.data,
+                subscription_status="pending" if form.account_type.data == "business" else "none",
             )
             user.password = form.password.data
             db.session.add(user)
             db.session.commit()
             log_activity(user.id, "register", "Usuario registrado en la plataforma")
             login_user(user)
+            if user.is_business:
+                flash("Cuenta creada. Solicita y acredita tu suscripción para publicar tu negocio.", "info")
+                return redirect(url_for("business_dashboard"))
             flash("¡Registro completado con éxito!", "success")
             return redirect(url_for("index"))
         return render_template("auth/register.html", form=form)
@@ -312,6 +340,32 @@ def create_app(config_name: str = "default"):
             flash("Perfil actualizado.", "success")
             return redirect(url_for("profile"))
         return render_template("auth/profile.html", form=form)
+
+    @app.route("/business")
+    @login_required
+    def business_dashboard():
+        if not current_user.is_business:
+            return redirect(url_for("profile"))
+        restaurants = Restaurant.query.filter_by(owner_id=current_user.id).order_by(Restaurant.created_at.desc()).all()
+        hotels = Hotel.query.filter_by(owner_id=current_user.id).order_by(Hotel.created_at.desc()).all()
+        subscription_active = current_user.subscription_status == "active" and (current_user.subscription_expires_at is None or current_user.subscription_expires_at > datetime.utcnow())
+        return render_template("business/dashboard.html", restaurants=restaurants, hotels=hotels, subscription_active=subscription_active)
+
+    @app.route("/business/subscribe", methods=["GET", "POST"])
+    @login_required
+    def business_subscribe():
+        if not current_user.is_business:
+            return redirect(url_for("profile"))
+        form = SubscriptionForm(obj=current_user)
+        form.plan.data = current_user.subscription_plan
+        if form.validate_on_submit():
+            current_user.subscription_plan = form.plan.data
+            current_user.subscription_status = "pending"
+            current_user.subscription_expires_at = None
+            db.session.commit()
+            flash("Solicitud enviada. Un administrador activará la suscripción tras confirmar el pago.", "info")
+            return redirect(url_for("business_dashboard"))
+        return render_template("business/subscribe.html", form=form)
 
     @app.route("/dictionary")
     def dictionary():
@@ -564,6 +618,27 @@ def create_app(config_name: str = "default"):
             flash("El rol seleccionado no es válido.", "danger")
         return redirect(url_for("admin_users"))
 
+    @app.route("/admin/users/<int:user_id>/subscription", methods=["POST"])
+    @login_required
+    def update_user_subscription(user_id):
+        if not current_user.is_admin:
+            return jsonify({"status": "forbidden"}), 403
+        user = User.query.get_or_404(user_id)
+        if user.role != "business":
+            flash("Solo las cuentas de negocio tienen suscripciones.", "warning")
+            return redirect(url_for("admin_users"))
+        action = request.form.get("action")
+        if action == "activate":
+            user.subscription_status = "active"
+            user.subscription_expires_at = datetime.utcnow() + timedelta(days=30)
+            flash(f"Suscripción de {user.business_name or user.username} activada durante 30 días.", "success")
+        elif action == "expire":
+            user.subscription_status = "expired"
+            user.subscription_expires_at = datetime.utcnow()
+            flash("Suscripción marcada como vencida.", "info")
+        db.session.commit()
+        return redirect(url_for("admin_users"))
+
     @app.route("/admin/dictionary")
     @login_required
     def admin_dictionary():
@@ -786,7 +861,19 @@ def create_app(config_name: str = "default"):
     @login_required
     def admin_new_restaurant():
         if not current_user.is_admin:
-            flash("No tienes permisos de administrador.", "danger")
+            if not current_user.is_business:
+                flash("No tienes permisos para gestionar negocios.", "danger")
+                return redirect(url_for("index"))
+            if current_user.subscription_status != "active" or (current_user.subscription_expires_at and current_user.subscription_expires_at <= datetime.utcnow()):
+                flash("Necesitas una suscripción activa para publicar.", "warning")
+                return redirect(url_for("business_subscribe"))
+            owned_count = Restaurant.query.filter_by(owner_id=current_user.id).count() + Hotel.query.filter_by(owner_id=current_user.id).count()
+            if current_user.subscription_plan != "pro" and owned_count >= 3:
+                flash("El plan de 250 FCFA permite hasta 3 publicaciones.", "warning")
+                return redirect(url_for("business_dashboard"))
+        if current_user.is_admin or current_user.is_business:
+            pass
+        else:
             return redirect(url_for("index"))
 
         form = RestaurantForm()
@@ -807,22 +894,23 @@ def create_app(config_name: str = "default"):
                 latitude=form.latitude.data,
                 longitude=form.longitude.data,
                 image=image_path,
+                owner_id=current_user.id if current_user.is_business else None,
             )
             db.session.add(item)
             db.session.commit()
             log_activity(current_user.id, "restaurant_created", f"Restaurante creado: {item.name}")
             flash("Restaurante añadido correctamente.", "success")
-            return redirect(url_for("admin_content"))
+            return redirect(url_for("business_dashboard" if current_user.is_business else "admin_content"))
 
         return render_template("admin/content_form.html", form=form, title="Nuevo restaurante", submit_label="Crear restaurante", action_url=url_for("admin_new_restaurant"))
 
     @app.route("/admin/content/restaurant/<int:item_id>/edit", methods=["GET", "POST"])
     @login_required
     def admin_edit_restaurant(item_id):
-        if not current_user.is_admin:
-            flash("No tienes permisos de administrador.", "danger")
+        if not current_user.is_admin and not current_user.is_business:
+            flash("No tienes permisos para gestionar negocios.", "danger")
             return redirect(url_for("index"))
-        item = Restaurant.query.get_or_404(item_id)
+        item = Restaurant.query.filter_by(id=item_id, **({"owner_id": current_user.id} if current_user.is_business else {})).first_or_404()
         form = RestaurantForm(obj=item)
         if form.validate_on_submit():
             item.name = form.name.data.strip()
@@ -840,14 +928,24 @@ def create_app(config_name: str = "default"):
             db.session.commit()
             log_activity(current_user.id, "restaurant_updated", f"Restaurante actualizado: {item.name}")
             flash("Restaurante actualizado correctamente.", "success")
-            return redirect(url_for("admin_content"))
+            return redirect(url_for("business_dashboard" if current_user.is_business else "admin_content"))
         return render_template("admin/content_form.html", form=form, title="Editar restaurante", submit_label="Guardar cambios", action_url=url_for("admin_edit_restaurant", item_id=item.id))
 
     @app.route("/admin/content/hotel/new", methods=["GET", "POST"])
     @login_required
     def admin_new_hotel():
         if not current_user.is_admin:
-            flash("No tienes permisos de administrador.", "danger")
+            if not current_user.is_business:
+                flash("No tienes permisos para gestionar negocios.", "danger")
+                return redirect(url_for("index"))
+            if current_user.subscription_status != "active" or (current_user.subscription_expires_at and current_user.subscription_expires_at <= datetime.utcnow()):
+                flash("Necesitas una suscripción activa para publicar.", "warning")
+                return redirect(url_for("business_subscribe"))
+            owned_count = Restaurant.query.filter_by(owner_id=current_user.id).count() + Hotel.query.filter_by(owner_id=current_user.id).count()
+            if current_user.subscription_plan != "pro" and owned_count >= 3:
+                flash("El plan de 250 FCFA permite hasta 3 publicaciones.", "warning")
+                return redirect(url_for("business_dashboard"))
+        if not current_user.is_admin and not current_user.is_business:
             return redirect(url_for("index"))
 
         form = HotelForm()
@@ -868,22 +966,23 @@ def create_app(config_name: str = "default"):
                 latitude=form.latitude.data,
                 longitude=form.longitude.data,
                 image=image_path,
+                owner_id=current_user.id if current_user.is_business else None,
             )
             db.session.add(item)
             db.session.commit()
             log_activity(current_user.id, "hotel_created", f"Hotel creado: {item.name}")
             flash("Hotel añadido correctamente.", "success")
-            return redirect(url_for("admin_content"))
+            return redirect(url_for("business_dashboard" if current_user.is_business else "admin_content"))
 
         return render_template("admin/content_form.html", form=form, title="Nuevo hotel", submit_label="Crear hotel", action_url=url_for("admin_new_hotel"))
 
     @app.route("/admin/content/hotel/<int:item_id>/edit", methods=["GET", "POST"])
     @login_required
     def admin_edit_hotel(item_id):
-        if not current_user.is_admin:
-            flash("No tienes permisos de administrador.", "danger")
+        if not current_user.is_admin and not current_user.is_business:
+            flash("No tienes permisos para gestionar negocios.", "danger")
             return redirect(url_for("index"))
-        item = Hotel.query.get_or_404(item_id)
+        item = Hotel.query.filter_by(id=item_id, **({"owner_id": current_user.id} if current_user.is_business else {})).first_or_404()
         form = HotelForm(obj=item)
         if form.validate_on_submit():
             item.name = form.name.data.strip()
@@ -901,7 +1000,7 @@ def create_app(config_name: str = "default"):
             db.session.commit()
             log_activity(current_user.id, "hotel_updated", f"Hotel actualizado: {item.name}")
             flash("Hotel actualizado correctamente.", "success")
-            return redirect(url_for("admin_content"))
+            return redirect(url_for("business_dashboard" if current_user.is_business else "admin_content"))
         return render_template("admin/content_form.html", form=form, title="Editar hotel", submit_label="Guardar cambios", action_url=url_for("admin_edit_hotel", item_id=item.id))
 
     @app.route("/admin/reviews")
@@ -1026,13 +1125,97 @@ def seed_data():
             ]
         )
 
-    if Hotel.query.count() == 0:
-        db.session.add_all(
-            [
-                Hotel(name="Hotel Moka", description="Alojamiento moderno con excelente servicio.", city="Malabo", address="Malabo centro", phone="+240222222", website="https://example.com", price_level="alto", stars=4, latitude=3.752, longitude=8.781, image="default-hotel.svg"),
-                Hotel(name="Hotel del Golfo", description="Hotel de paso con atención cercana.", city="Bata", address="Bata centro", phone="+240333333", website="https://example.com", price_level="medio", stars=3, latitude=1.864, longitude=9.767, image="default-hotel.svg"),
-            ]
-        )
+    hotel_catalog = [
+        {
+            "name": "Hotel Sofitel Malabo Sipopo Le Golf",
+            "description": "Exclusivo resort de 5 estrellas en Sipopo, con playa privada, campo de golf profesional de 18 hoyos, spa, piscina y restaurantes de cocina francesa e internacional.",
+            "city": "Malabo",
+            "address": "Sipopo",
+            "website": "https://all.accor.com/hotel/8212/index.es.shtml",
+            "price_level": "alto",
+            "stars": 5,
+            "latitude": 3.7915,
+            "longitude": 8.8710,
+            "image": "imgns/hotel sofitel.jpg",
+        },
+        {
+            "name": "Hotel Bisila Palace",
+            "description": "Hotel de 5 estrellas situado a 1,2 kilómetros del Aeropuerto de Malabo, con habitaciones climatizadas, wifi, piscina exterior, jardines, gimnasio y restaurante buffet.",
+            "city": "Malabo",
+            "address": "Malabo, cerca del aeropuerto",
+            "price_level": "alto",
+            "stars": 5,
+            "latitude": 3.7554,
+            "longitude": 8.7244,
+            "image": "imgns/bisila palace.jpg",
+        },
+        {
+            "name": "Hotel Anda China",
+            "description": "Hotel de la zona de Malabo II, reconocido por su arquitectura de vanguardia, estructuras sinuosas y modernos acabados de cristal, orientado a viajeros de negocios.",
+            "city": "Malabo",
+            "address": "Malabo II",
+            "price_level": "alto",
+            "stars": 5,
+            "latitude": 3.7431,
+            "longitude": 8.7618,
+            "image": "imgns/hotel andachina.jpg",
+        },
+        {
+            "name": "Hacienda Marcos Mbá Nguema",
+            "description": "Complejo de agroturismo en Riaba, rodeado de cultivos, senderos y vegetación local para disfrutar de la naturaleza y la tranquilidad del sur de Bioko.",
+            "city": "Riaba",
+            "address": "La Granja de Riaba",
+            "price_level": "medio",
+            "stars": 3,
+            "latitude": 3.3812,
+            "longitude": 8.7516,
+            "image": "imgns/playa de bioko.png",
+        },
+        {
+            "name": "Grand Hotel Djibloho",
+            "description": "Resort de 5 estrellas en la selva tropical de Djibloho, con centro de congresos, spa, suites, anfiteatro, campo de golf y propuestas de turismo ecológico.",
+            "city": "Ciudad de la Paz",
+            "address": "Provincia de Djibloho",
+            "price_level": "alto",
+            "stars": 5,
+            "latitude": 1.5737,
+            "longitude": 10.8256,
+            "image": "imgns/hotel djiblho.jpg",
+        },
+        {
+            "name": "Grand Hotel Bata",
+            "description": "Complejo turístico de 15 plantas y 234 habitaciones frente al mar, con casino, discoteca, helipuerto, piscina exterior y restaurantes gourmet.",
+            "city": "Bata",
+            "address": "Frente al mar, Bata",
+            "price_level": "alto",
+            "stars": 5,
+            "latitude": 1.8615,
+            "longitude": 9.7540,
+            "image": "imgns/h0tel bata.jpg",
+        },
+        {
+            "name": "Hotel Panáfrica Boutique & Spa",
+            "description": "Hotel boutique de 5 estrellas en el paseo marítimo de Bata, cerca de Playa Cocoteros, con atención personalizada, spa premium y vistas al Atlántico.",
+            "city": "Bata",
+            "address": "Paseo marítimo, Playa Cocoteros",
+            "price_level": "alto",
+            "stars": 5,
+            "latitude": 1.8590,
+            "longitude": 9.7512,
+            "image": "imgns/hotel panafrica.jpg",
+        },
+    ]
+    legacy_hotels = {"Hotel Moka", "Hotel del Golfo"}
+    for hotel_data in hotel_catalog:
+        item = Hotel.query.filter_by(name=hotel_data["name"]).first()
+        if item is None:
+            item = Hotel(**hotel_data)
+            db.session.add(item)
+        else:
+            for key, value in hotel_data.items():
+                setattr(item, key, value)
+    for item in Hotel.query.filter(Hotel.name.in_(legacy_hotels)).all():
+        db.session.delete(item)
 
     if NewsArticle.query.count() == 0:
         db.session.add_all(

@@ -45,6 +45,9 @@
                         {% if current_user.is_admin %}
                             <a class="btn btn-warning btn-sm" href="{{ url_for('admin_dashboard') }}">Admin</a>
                         {% endif %}
+                        {% if current_user.is_business %}
+                            <a class="btn btn-warning btn-sm" href="{{ url_for('business_dashboard') }}">Mi negocio</a>
+                        {% endif %}
                         <a class="btn btn-light btn-sm" href="{{ url_for('profile') }}">{{ current_user.full_name or current_user.username }}</a>
                         <a class="btn btn-dark btn-sm" href="{{ url_for('logout') }}">Salir</a>
                     {% else %}

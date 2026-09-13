@@ -15,6 +15,9 @@ class RegisterForm(FlaskForm):
     username = StringField("Usuario", validators=[DataRequired(), Length(min=3, max=80)])
     email = StringField("Correo", validators=[DataRequired(), Email()])
     password = PasswordField("Contraseña", validators=[DataRequired(), Length(min=6, max=128)])
+    account_type = SelectField("Tipo de cuenta", choices=[("user", "Visitante"), ("business", "Negocio")], default="user", validators=[DataRequired()])
+    business_name = StringField("Nombre del negocio", validators=[Optional(), Length(max=150)])
+    subscription_plan = SelectField("Suscripción", choices=[("basic", "250 FCFA/mes - hasta 3 publicaciones"), ("pro", "500 FCFA/mes - publicaciones ilimitadas")], default="basic", validators=[DataRequired()])
     submit = SubmitField("Crear cuenta")
 
 
@@ -78,8 +81,13 @@ class HotelForm(FlaskForm):
 
 
 class RoleForm(FlaskForm):
-    role = SelectField("Rol", choices=[("user", "Usuario"), ("editor", "Editor del diccionario"), ("admin", "Administrador")], validators=[DataRequired()])
+    role = SelectField("Rol", choices=[("user", "Usuario"), ("business", "Negocio"), ("editor", "Editor del diccionario"), ("admin", "Administrador")], validators=[DataRequired()])
     submit = SubmitField("Guardar rol")
+
+
+class SubscriptionForm(FlaskForm):
+    plan = SelectField("Plan", choices=[("basic", "250 FCFA/mes"), ("pro", "500 FCFA/mes")], validators=[DataRequired()])
+    submit = SubmitField("Solicitar suscripción")
 
 
 class PlaceRecommendationForm(FlaskForm):

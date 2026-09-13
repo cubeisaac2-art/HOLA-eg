@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% block title %}Panel del negocio | HOLA GUINEA{% endblock %}
+{% block content %}
+<section class="py-4">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
+        <div><h1 class="mb-1">{{ current_user.business_name or current_user.full_name }}</h1><p class="text-muted mb-0">Panel del negocio</p></div>
+        <a class="btn btn-primary" href="{{ url_for('business_subscribe') }}">Suscripción</a>
+    </div>
+    <div class="alert {{ 'alert-success' if subscription_active else 'alert-warning' }}">
+        Plan: <strong>{{ '500 FCFA/mes, ilimitado' if current_user.subscription_plan == 'pro' else '250 FCFA/mes, hasta 3 publicaciones' }}</strong>.
+        Estado: <strong>{{ 'Activo' if subscription_active else current_user.subscription_status }}</strong>{% if current_user.subscription_expires_at %}, vence el {{ current_user.subscription_expires_at.strftime('%d/%m/%Y') }}{% endif %}.
+    </div>
+    {% if subscription_active %}
+    <div class="d-flex flex-wrap gap-2 mb-4">
+        <a class="btn btn-outline-primary" href="{{ url_for('admin_new_restaurant') }}">Añadir restaurante</a>
+        <a class="btn btn-outline-primary" href="{{ url_for('admin_new_hotel') }}">Añadir hotel</a>
+    </div>
+    {% endif %}
+    <div class="row g-4">
+        <div class="col-md-6"><div class="card border-0 shadow-sm h-100"><div class="card-body"><h2 class="h4">Mis restaurantes</h2>{% for item in restaurants %}<div class="list-group-item px-0 d-flex justify-content-between"><span>{{ item.name }}</span><a href="{{ url_for('admin_edit_restaurant', item_id=item.id) }}">Editar</a></div>{% else %}<p class="text-muted">Todavía no tienes restaurantes.</p>{% endfor %}</div></div></div>
+        <div class="col-md-6"><div class="card border-0 shadow-sm h-100"><div class="card-body"><h2 class="h4">Mis hoteles</h2>{% for item in hotels %}<div class="list-group-item px-0 d-flex justify-content-between"><span>{{ item.name }}</span><a href="{{ url_for('admin_edit_hotel', item_id=item.id) }}">Editar</a></div>{% else %}<p class="text-muted">Todavía no tienes hoteles.</p>{% endfor %}</div></div></div>
+    </div>
+</section>
+{% endblock %}
