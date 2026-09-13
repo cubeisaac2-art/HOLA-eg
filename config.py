@@ -1,11 +1,15 @@
 import os
 from pathlib import Path
+from dotenv import load_dotenv
+
+
+load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent
 
 
 def database_url():
-    configured_url = os.environ.get("DATABASE_URL")
+    configured_url = os.environ.get("DATABASE_URL") or os.environ.get("NEON_DATABASE_URL")
     if not configured_url:
         return f"sqlite:///{BASE_DIR / 'app.db'}"
     if configured_url.startswith("postgres://"):

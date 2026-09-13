@@ -54,6 +54,8 @@ La configuración local usa SQLite si no existe `DATABASE_URL`. En producción, 
 
 `DATABASE_URL` es necesaria en Render para conservar noticias, hoteles, usuarios y cambios del administrador. Sin ella, la aplicación usa SQLite dentro del disco efímero del servicio y los cambios pueden desaparecer al reiniciar o desplegar.
 
+Para usar Neon en VS Code, copia `.env.example` como `.env` y pega la cadena de conexión de Neon en `DATABASE_URL`. En Render, añade la misma variable en **Environment > Environment Variables** del Web Service; no la pongas en `render.yaml` ni la subas a GitHub. También se acepta `NEON_DATABASE_URL` para el desarrollo local.
+
 Ejemplo de formato:
 
 ```text
