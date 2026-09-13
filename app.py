@@ -125,6 +125,8 @@ def ensure_schema_columns():
         db.session.execute(text("ALTER TABLE food_items ADD COLUMN recipe TEXT DEFAULT ''"))
     if "video_url" not in food_columns:
         db.session.execute(text("ALTER TABLE food_items ADD COLUMN video_url VARCHAR(500) DEFAULT ''"))
+    if "source_url" not in food_columns:
+        db.session.execute(text("ALTER TABLE food_items ADD COLUMN source_url VARCHAR(500) DEFAULT ''"))
     migrations = {
         "users": [
             ("business_name", "VARCHAR(150) DEFAULT ''"),
@@ -164,6 +166,7 @@ def create_app(config_name: str = "default"):
         db.create_all()
         ensure_schema_columns()
         seed_data()
+        import_wikipedia_food()
         import_ahoraeg_news()
         import_bundled_fang_dictionary()
 
@@ -1145,6 +1148,49 @@ def import_ahoraeg_news():
         else:
             for key, value in article_data.items():
                 setattr(article, key, value)
+    db.session.commit()
+
+
+def import_wikipedia_food():
+    food_catalog = [
+        {
+            "name": "Salsa de modica",
+            "description": "Guiso tradicional ecuatoguineano preparado con modica, también llamada chocolate local: semillas de mango africano tostadas, molidas y conservadas en polvo o en piedra. Se cocina con carne o pescado, tomate, cebolla y ajo, y suele acompañarse con fufú de yuca.",
+            "city": "Malabo",
+            "price_level": "medio",
+            "category": "local",
+            "recipe": "Ingredientes habituales: modica, carne o pescado, tomate, cebolla, ajo y fufú de yuca. La modica se ralla o se disuelve para formar una salsa espesa.",
+            "image": "https://commons.wikimedia.org/wiki/Special:FilePath/Ndo'o_(en_pain).jpg",
+            "source_url": "https://es.wikipedia.org/wiki/Gastronom%C3%ADa_de_Guinea_Ecuatorial",
+        },
+        {
+            "name": "Gastronomía de Guinea Ecuatorial",
+            "description": "Selección de sabores y productos de la cocina ecuatoguineana, marcada por las tradiciones fang, bubi, ndowé y annobonesa, con influencias africanas, españolas y criollas.",
+            "city": "Guinea Ecuatorial",
+            "price_level": "medio",
+            "category": "local",
+            "recipe": "Ingredientes representativos: yuca, malanga, ñame, plátano, cacahuete, pescados, pollo, cabra, verduras tropicales, aceite de palma y picante. Son habituales las sopas, los guisos y los envueltos en hoja de plátano.",
+            "image": "https://commons.wikimedia.org/wiki/Special:FilePath/Berenjena_blanca_en_Guinea_Ecuatorial.png",
+            "source_url": "https://es.wikipedia.org/wiki/Gastronom%C3%ADa_de_Guinea_Ecuatorial",
+        },
+        {
+            "name": "Salsa de cacahuete",
+            "description": "Guiso muy popular en Guinea Ecuatorial elaborado con cacahuetes molidos, cebolla y, según la receta, tomate, picante y gambas secas. Se sirve con pollo, pescado, cabra u otras carnes y suele acompañarse con arroz o yuca.",
+            "city": "Bata",
+            "price_level": "medio",
+            "category": "local",
+            "recipe": "Se tuestan y muelen los cacahuetes hasta obtener una pasta. Se prepara un sofrito de cebolla, tomate y pimiento, se incorpora la pasta con agua y se cocina con pollo, pescado o carne; puede llevar gambas secas, jengibre, ajo o perejil.",
+            "image": "https://commons.wikimedia.org/wiki/Special:FilePath/Pollo_en_salsa_de_cacahuete_1.jpg",
+            "source_url": "https://es.wikipedia.org/wiki/Salsa_de_cacahuete",
+        },
+    ]
+    for food_data in food_catalog:
+        item = FoodItem.query.filter_by(name=food_data["name"]).first()
+        if item is None:
+            db.session.add(FoodItem(video_url="", **food_data))
+        else:
+            for key, value in food_data.items():
+                setattr(item, key, value)
     db.session.commit()
 
 

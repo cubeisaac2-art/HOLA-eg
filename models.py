@@ -117,6 +117,7 @@ class FoodItem(db.Model):
     category = db.Column(db.String(40), default="local")
     recipe = db.Column(db.Text, default="")
     video_url = db.Column(db.String(500), default="")
+    source_url = db.Column(db.String(500), default="")
     image = db.Column(db.String(255), default="default-food.svg")
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
@@ -142,6 +143,7 @@ class FoodItem(db.Model):
             "category": self.category,
             "recipe": self.recipe,
             "video_url": self.video_url,
+            "source_url": self.source_url,
             "image": self.image,
             "average_rating": self.average_rating,
             "review_count": self.review_count,

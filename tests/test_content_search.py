@@ -22,6 +22,17 @@ def test_food_list_filters_by_query_and_city():
             assert 'Fufu' not in body
 
 
+def test_wikipedia_food_catalog_is_imported_with_sources_and_images():
+    app = create_app()
+
+    with app.app_context():
+        foods = {item.name: item for item in FoodItem.query.all()}
+        assert "Salsa de modica" in foods
+        assert "Salsa de cacahuete" in foods
+        assert foods["Salsa de modica"].image.startswith("https://commons.wikimedia.org/")
+        assert foods["Salsa de cacahuete"].source_url == "https://es.wikipedia.org/wiki/Salsa_de_cacahuete"
+
+
 def test_restaurant_list_filters_by_query():
     app = create_app()
 
