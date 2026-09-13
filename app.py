@@ -201,6 +201,10 @@ def create_app(config_name: str = "default"):
     def about():
         return render_template("about.html")
 
+    @app.route("/history")
+    def history():
+        return render_template("history.html")
+
     @app.route("/travel-guides")
     def travel_guides():
         packages = [

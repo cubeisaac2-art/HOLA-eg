@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+{% block title %}Historia e información | HOLA GUINEA{% endblock %}
+{% block content %}
+<section class="py-4">
+    <div class="mb-4">
+        <span class="text-uppercase small text-primary fw-semibold">Memoria y territorio</span>
+        <h1>Historia e información de Guinea Ecuatorial</h1>
+        <p class="lead text-muted">Una síntesis para conocer el país, sus pueblos, su territorio y algunos momentos clave de su historia.</p>
+    </div>
+
+    <div class="row g-4 mb-5">
+        <div class="col-lg-6">
+            <img src="{{ media_url('https://commons.wikimedia.org/wiki/Special:FilePath/GUINEA_ECUATORIAL.png') }}" class="img-fluid rounded-4 shadow-sm w-100" style="max-height: 360px; object-fit: contain; background: #f8fafc;" alt="Mapa de Guinea Ecuatorial">
+        </div>
+        <div class="col-lg-6">
+            <h2>El país</h2>
+            <p>Guinea Ecuatorial se encuentra en el golfo de Guinea y combina una región continental, Mbini o Río Muni, con una región insular formada por Bioko, Annobón, Corisco y las islas Elobey.</p>
+            <ul class="list-group list-group-flush">
+                <li class="list-group-item"><strong>Superficie:</strong> aproximadamente 28.052 km².</li>
+                <li class="list-group-item"><strong>Regiones:</strong> Insular y Continental.</li>
+                <li class="list-group-item"><strong>Idiomas oficiales:</strong> español, francés y portugués.</li>
+                <li class="list-group-item"><strong>Moneda:</strong> franco CFA de África Central.</li>
+                <li class="list-group-item"><strong>Capital:</strong> Ciudad de la Paz, según la información vigente consultada.</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-5">
+        <div class="col-lg-7">
+            <h2>Una historia en varias etapas</h2>
+            <p>El territorio reúne tradiciones anteriores a la llegada europea, reinos y comunidades de la región del golfo de Guinea, y una historia colonial marcada primero por Portugal y después por España.</p>
+            <p>La autonomía se estableció en 1963 y la independencia fue proclamada el 12 de octubre de 1968. La etapa posterior incluye la dictadura de Francisco Macías Nguema, el cambio de poder de 1979 y la evolución política, social y económica del país hasta la actualidad.</p>
+            <p>La geografía también explica buena parte de su historia: Bioko es una isla volcánica próxima a Camerún, mientras que la región continental limita con Camerún, Gabón y el océano Atlántico.</p>
+        </div>
+        <div class="col-lg-5">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body p-4">
+                    <h3 class="h4">Cronología breve</h3>
+                    <div class="list-group list-group-flush">
+                        <div class="list-group-item px-0"><strong>1471-1472:</strong> exploración portuguesa de Bioko y Annobón.</div>
+                        <div class="list-group-item px-0"><strong>1778:</strong> transferencia de las islas a España.</div>
+                        <div class="list-group-item px-0"><strong>1926:</strong> unión administrativa del territorio insular y continental.</div>
+                        <div class="list-group-item px-0"><strong>1963:</strong> autonomía con el nombre Guinea Ecuatorial.</div>
+                        <div class="list-group-item px-0"><strong>1968:</strong> independencia.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4 align-items-center">
+        <div class="col-lg-5">
+            <img src="{{ media_url('https://commons.wikimedia.org/wiki/Special:FilePath/Equatorial_Guinea%27s_ethnic_groups.png') }}" class="img-fluid rounded-4 shadow-sm w-100" style="max-height: 360px; object-fit: contain; background: #f8fafc;" alt="Grupos étnicos de Guinea Ecuatorial">
+        </div>
+        <div class="col-lg-7">
+            <h2>Etnografía y diversidad</h2>
+            <p>La población es mayoritariamente bantú. Los fang tienen una presencia principal en la región continental y los bubis son originarios de Bioko. También forman parte de la diversidad nacional los fernandinos, annoboneses, bisios, ndowés, bengas y otras comunidades.</p>
+            <p>La historia del país incluye migraciones, diásporas y comunidades procedentes de otros lugares de África, Europa y Asia. El español ocupa un lugar singular como lengua oficial y de comunicación, junto a las lenguas autóctonas y las demás lenguas oficiales.</p>
+            <div class="d-flex flex-wrap gap-2 mt-3">
+                <a class="btn btn-outline-primary" href="https://es.wikipedia.org/wiki/Guinea_Ecuatorial" target="_blank" rel="noopener">Fuente: Guinea Ecuatorial</a>
+                <a class="btn btn-outline-primary" href="https://es.wikipedia.org/wiki/Etnograf%C3%ADa_de_Guinea_Ecuatorial" target="_blank" rel="noopener">Fuente: Etnografía</a>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
