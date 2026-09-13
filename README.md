@@ -52,6 +52,8 @@ En producción debes cambiar la cuenta inicial, definir `SECRET_KEY` y no reutil
 
 La configuración local usa SQLite si no existe `DATABASE_URL`. En producción, define `DATABASE_URL` con la cadena PostgreSQL. Render puede pedirte crear la base de datos por separado según el plan disponible; copia su URL privada en la variable del Web Service. Las tablas se crean automáticamente al iniciar la aplicación.
 
+`DATABASE_URL` es necesaria en Render para conservar noticias, hoteles, usuarios y cambios del administrador. Sin ella, la aplicación usa SQLite dentro del disco efímero del servicio y los cambios pueden desaparecer al reiniciar o desplegar.
+
 Ejemplo de formato:
 
 ```text
