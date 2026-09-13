@@ -171,6 +171,8 @@ def create_app(config_name: str = "default"):
     def share_helpers():
         def media_url(image, upload_folder="uploads"):
             image = image or ""
+            if image.startswith(("http://", "https://")):
+                return image
             if image.startswith("imgns/"):
                 return url_for("static", filename=image)
             return url_for("static", filename=f"{upload_folder}/{image}")
@@ -1095,6 +1097,7 @@ def import_ahoraeg_news():
             "summary": "La empresa distribuyó kits escolares en Malabo y Bata dentro de la promoción La Vuelta al Cole viene con Premio, como apoyo a las familias ante el inicio del curso.",
             "body": "Canal Sol realizó una entrega simultánea de material escolar a sus abonados en Malabo y Bata. La iniciativa busca apoyar a las familias ecuatoguineanas durante el comienzo del nuevo curso académico.",
             "category": "economia",
+            "image": "https://ahoraeg.com/wp-content/uploads/2026/09/WhatsApp-Image-2026-09-12-at-15.31.43.jpeg",
             "source_url": "https://ahoraeg.com/economia/2026/09/12/canal-sol-entrega-material-escolar-a-sus-abonados-en-malabo-y-bata/",
             "published_at": datetime(2026, 9, 12),
         },
@@ -1103,6 +1106,7 @@ def import_ahoraeg_news():
             "summary": "Las evaluaciones reunieron a 86 jóvenes en Malabo y Bata para optar a 60 becas de formación profesional en áreas estratégicas.",
             "body": "La fase semifinal del programa de becas concluyó tras dos jornadas de pruebas en las sedes de BANGE Business School. El comité evaluará los resultados antes de publicar la lista definitiva de beneficiarios.",
             "category": "economia",
+            "image": "https://ahoraeg.com/wp-content/uploads/2026/09/WhatsApp-Image-2026-09-12-at-15.31.43.jpeg",
             "source_url": "https://ahoraeg.com/economia/2026/09/12/culminan-con-exito-las-pruebas-de-acceso-al-programa-nacional-de-becas-del-ministerio-de-hidrocarburos-minas-y-electricidad-y-bange-business-school/",
             "published_at": datetime(2026, 9, 12),
         },
@@ -1111,6 +1115,7 @@ def import_ahoraeg_news():
             "summary": "El nuevo director general aporta más de quince años de experiencia, formación internacional y dominio de tres idiomas para apoyar la diversificación económica.",
             "body": "Rosendo Machimbo Pérez ha sido nombrado Director General de Estrategia Económica y Diversificación Productiva. Su trayectoria combina experiencia empresarial, formación económica y trabajo en planificación estratégica.",
             "category": "politica",
+            "image": "https://ahoraeg.com/wp-content/uploads/2026/09/ROSENDO3.png",
             "source_url": "https://ahoraeg.com/politica/2026/09/12/rosendo-machimbo-perez-experiencia-tecnica-al-frente-de-la-direccion-general-de-estrategia-economica-y-la-diversificacion-productiva/",
             "published_at": datetime(2026, 9, 12),
         },
@@ -1119,6 +1124,7 @@ def import_ahoraeg_news():
             "summary": "El conjunto de Akonibe comenzó con una amplia victoria su eliminatoria continental ante el Fomboni FC de Comoras en Yaundé.",
             "body": "El 15 de Agosto de Akonibe se impuso por 4-0 al Fomboni FC en el partido de ida de la primera fase preliminar de la Liga de Campeones de la CAF 2026/2027. El equipo ecuatoguineano deberá cerrar la eliminatoria en el encuentro de vuelta.",
             "category": "deporte",
+            "image": "https://ahoraeg.com/wp-content/uploads/2026/09/1789139543086.png",
             "source_url": "https://ahoraeg.com/deportes/2026/09/12/preliminares-de-la-champions-caf-15-de-agosto-muestra-su-poderio-ofensivo-y-se-impone-por-4-0-contra-fomboni/",
             "published_at": datetime(2026, 9, 12),
         },
@@ -1127,6 +1133,7 @@ def import_ahoraeg_news():
             "summary": "El Programa Nacional de VIH informó de la recepción de medicamentos tras retrasos logísticos y pidió a los pacientes no modificar su tratamiento por cuenta propia.",
             "body": "El Ministerio de Sanidad e Infraestructuras Sanitarias comunicó el inicio de la recepción y distribución progresiva de antirretrovirales. Las autoridades recomiendan acudir al centro sanitario ante cualquier dificultad con la medicación.",
             "category": "salud",
+            "image": "https://ahoraeg.com/wp-content/uploads/2026/09/WhatsApp-Image-2026-09-11-at-13.28.25.jpeg",
             "source_url": "https://ahoraeg.com/sociedad/2026/09/11/llegan-los-antirretrovirales-para-las-personas-con-el-vih-y-sanidad-comienza-su-distribucion/",
             "published_at": datetime(2026, 9, 11),
         },
@@ -1134,7 +1141,7 @@ def import_ahoraeg_news():
     for article_data in articles:
         article = NewsArticle.query.filter_by(source_url=article_data["source_url"]).first()
         if article is None:
-            db.session.add(NewsArticle(image="default-news.svg", is_published=True, **article_data))
+            db.session.add(NewsArticle(is_published=True, **article_data))
         else:
             for key, value in article_data.items():
                 setattr(article, key, value)
